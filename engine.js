@@ -58,6 +58,22 @@ export function energyIndex() {
 }
 
 /* -----------------------------
+   🆕 MARKET SIGNAL LAYER (ADDED)
+------------------------------*/
+export function oilMarketSignal() {
+
+  const supply = state.cpoReserve;
+  const demandPressure = state.FX + state.INF + state.DC + state.CYB;
+
+  const imbalance = demandPressure - supply;
+
+  if (imbalance > 30) return "HIGH_PRICE_PRESSURE";
+  if (imbalance > 10) return "RISING_PRICE";
+  if (imbalance < -10) return "LOW_PRICE";
+  return "STABLE";
+}
+
+/* -----------------------------
    BIODIESEL ENGINE (STABLE VERSION)
 ------------------------------*/
 export function updateBiodieselLevel(risk) {
@@ -193,8 +209,9 @@ export function inject(type) {
     risk,
     policy: policyState(risk),
     energy: energyIndex(),
-    cascadeCount: getCascadeCount(),
-    scenario: scenarios[type]
+    cascadeCount,
+    scenario: scenarios[type],
+    market: oilMarketSignal()   // ✅ ADDED OUTPUT
   };
 }
 
