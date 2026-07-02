@@ -56,7 +56,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     const scenario = scenarios?.[activeScenario] || {
       name: "NO SCENARIO",
-      impact: "Awaiting input"
+      description: "Awaiting input"
     };
 
     const list = Array.isArray(solutions?.(risk))
@@ -67,7 +67,7 @@ window.addEventListener("DOMContentLoaded", () => {
       el.scenarioPanel.innerHTML =
         "<h3>SCENARIO PANEL</h3>" +
         scenario.name + "<br>" +
-        scenario.impact;
+        (scenario.description || scenario.impact || "No description");
     }
 
     if (el.riskPanel) {
@@ -91,7 +91,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // GLOBAL BUTTON CONTROLLER
+  // GLOBAL SCENARIO TRIGGER
   window.trigger = function(type) {
 
     activeScenario = type;
@@ -107,10 +107,7 @@ window.addEventListener("DOMContentLoaded", () => {
     return result;
   };
 
-  // INITIAL RENDER
+  // INITIAL RENDER (NO LOOP → FIXES GITHUB TIMEOUT)
   renderAll();
-
-  // SAFE LIGHT REFRESH (NO STATE OVERWRITE)
-  setInterval(renderAll, 1000);
 
 });
