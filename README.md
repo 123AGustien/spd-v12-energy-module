@@ -1,5 +1,5 @@
-# spd-v12-energy-module
-SPD v12 Energy Module cockpit for adaptive energy scenario simulation, risk evaluation, and policy response modelling (biodiesel, solar, and energy resilience logic).
+Your site is live at https://123agustien.github.io/spd-v12-energy-module/
+lePD v12 Energy Module cockpit for adaptive energy scenario simulation, risk evaluation, and policy response modelling (biodiesel, solar, and energy resilience logic).
 
 🛰 SPD v12 // ENERGY MODULE SIMULATOR
 Frontend-only resilience simulation module for modeling adaptive energy policy decisions under dynamic global conditions.
