@@ -9,6 +9,9 @@ import {
 
 window.addEventListener("DOMContentLoaded", () => {
 
+  // -----------------------------
+  // ELEMENT BINDING
+  // -----------------------------
   const el = {
     FX: document.getElementById("FX"),
     DC: document.getElementById("DC"),
@@ -21,6 +24,8 @@ window.addEventListener("DOMContentLoaded", () => {
     riskPanel: document.getElementById("riskPanel"),
     solutionPanel: document.getElementById("solutionPanel"),
     actionPanel: document.getElementById("actionPanel"),
+
+    decisionPanel: document.getElementById("decisionPanel"),
 
     blend: document.getElementById("blend"),
     cpo: document.getElementById("cpo"),
@@ -41,7 +46,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (el.CYB) el.CYB.innerText = state.CYB;
     if (el.INF) el.INF.innerText = state.INF;
 
-    // BIODIESEL (FIXED: single source of truth)
+    // BIODIESEL SYSTEM
     if (el.blend) el.blend.innerText = state.biodiesel.toFixed(1);
     if (el.cpo) el.cpo.innerText = state.cpoReserve;
     if (el.imp) el.imp.innerText = "—";
@@ -56,27 +61,33 @@ window.addEventListener("DOMContentLoaded", () => {
   function renderPanels() {
 
     const risk = riskLevel();
-
     const scenario = scenarios?.[activeScenario] || {
       name: "NO SCENARIO",
-      description: "Awaiting input"
+      description: "Awaiting input",
+      impact: ""
     };
 
-    const list = solutions(risk);
+    const list = solutions(risk) || ["Normal operations"];
 
+    // -----------------------------
     // RISK PANEL
+    // -----------------------------
     el.riskPanel.innerHTML = `
       <h3>RISK PANEL</h3>
       Risk: ${risk}
     `;
 
+    // -----------------------------
     // SOLUTION PANEL
+    // -----------------------------
     el.solutionPanel.innerHTML = `
       <h3>SOLUTION PANEL</h3>
       ${list.map(x => `• ${x}`).join("<br>")}
     `;
 
+    // -----------------------------
     // ACTION PANEL
+    // -----------------------------
     el.actionPanel.innerHTML = `
       <h3>ACTION SEQUENCE</h3>
       1. Detect input<br>
@@ -86,6 +97,7 @@ window.addEventListener("DOMContentLoaded", () => {
     `;
 
     renderScenarioInfo(scenario);
+    renderDecisionPanel(risk, scenario);
   }
 
   // -----------------------------
@@ -113,7 +125,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
       const btn = document.createElement("button");
       btn.className = "scenario-btn";
-
       btn.innerHTML = `<b>${s.name}</b>`;
 
       btn.onclick = () => trigger(key);
@@ -123,17 +134,69 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
+  // DECISION ENGINE (NEW)
+  // -----------------------------
+  function renderDecisionPanel(risk, scenario) {
+
+    if (!el.decisionPanel) return;
+
+    let verdict = "";
+    let reason = "";
+    let action = "";
+
+    switch (risk) {
+
+      case "CRITICAL":
+        verdict = "CRITICAL SYSTEM FAILURE";
+        reason = "Multi-layer cascade detected across FX/DC/INF";
+        action = "Emergency shutdown + isolation";
+        break;
+
+      case "HIGH":
+        verdict = "HIGH STRESS STATE";
+        reason = "Cascade propagation active across subsystems";
+        action = "Reduce load + activate reserves";
+        break;
+
+      case "MEDIUM":
+        verdict = "STRESSED BUT STABLE";
+        reason = "Partial imbalance detected";
+        action = "Monitor + balancing";
+        break;
+
+      default:
+        verdict = "STABLE OPERATION";
+        reason = "No significant instability detected";
+        action = "Normal operations continue";
+        break;
+    }
+
+    el.decisionPanel.innerHTML = `
+      <h3>DECISION PANEL</h3>
+
+      <b>${verdict}</b><br><br>
+
+      <b>Reason:</b><br>
+      ${reason}<br><br>
+
+      <b>Action:</b><br>
+      ${action}<br><br>
+
+      <b>Scenario:</b><br>
+      ${scenario.name}
+    `;
+  }
+
+  // -----------------------------
   // ENGINE TRIGGER
   // -----------------------------
   window.trigger = function(type) {
 
     activeScenario = type;
 
-    const result = inject(type);
+    inject(type);
 
     renderAll();
-
-    return result;
   };
 
   // -----------------------------
