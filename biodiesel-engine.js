@@ -1,7 +1,11 @@
+/* SPD v12 BIODIESEL ENGINE v2
+   SINGLE SOURCE OF TRUTH LAYER
+*/
+
 import { state } from "./engine.js";
 
 /* -----------------------------
-   BIODIESEL STATE LAYER
+   BIODIESEL UI STATE MIRROR
 ------------------------------*/
 export const biodieselState = {
   blendRatio: 35,
@@ -11,85 +15,52 @@ export const biodieselState = {
 };
 
 /* -----------------------------
-   INTERNAL BUFFER CALC
+   INTERNAL CALC ENGINE
 ------------------------------*/
-function calcPressure() {
-  return (state.FX * 0.25 + state.INF * 0.35);
+function clamp(n, min, max) {
+  return Math.max(min, Math.min(max, n));
 }
 
 /* -----------------------------
-   BIODIESEL RESPONSE ENGINE v3
+   MAIN UPDATE FUNCTION
+   (called by UI after inject)
 ------------------------------*/
 export function updateBiodieselLayer(risk) {
 
-  const pressure = calcPressure();
-
-  // buffer response (small automatic stabilization)
-  const buffer = pressure * 0.4;
+  // pressure derived from system stress
+  const pressure = (state.FX * 0.25 + state.INF * 0.35);
 
   switch (risk) {
 
     case "LOW":
-      biodieselState.blendRatio = 35 + buffer * 0.2;
-      biodieselState.cpoStock = Math.min(100, biodieselState.cpoStock + 1);
+      biodieselState.blendRatio = 35;
+      biodieselState.cpoStock = clamp(biodieselState.cpoStock + 1, 0, 100);
       biodieselState.importDependency = 60;
       biodieselState.stability = "NORMAL";
       break;
 
     case "MEDIUM":
-      biodieselState.blendRatio = 38 + buffer * 0.6;
-      biodieselState.cpoStock = Math.max(0, biodieselState.cpoStock - 1);
-      biodieselState.importDependency = 60 + buffer * 0.3;
-      biodieselState.stability = "WATCH";
+      biodieselState.blendRatio = 40 + Math.min(2, pressure);
+      biodieselState.importDependency = 62 + Math.min(3, pressure);
+      biodieselState.stability = "STABLE";
       break;
 
     case "HIGH":
-      biodieselState.blendRatio = 45 + buffer;
-      biodieselState.cpoStock = Math.max(0, biodieselState.cpoStock - 2);
-      biodieselState.importDependency = 65 + buffer * 0.5;
+      biodieselState.blendRatio = 50 + Math.min(4, pressure);
+      biodieselState.importDependency = 68 + Math.min(5, pressure);
+      biodieselState.cpoStock = clamp(biodieselState.cpoStock - 2, 0, 100);
       biodieselState.stability = "STRESSED";
       break;
 
     case "CRITICAL":
-      biodieselState.blendRatio = 50 + buffer * 1.2;
-      biodieselState.cpoStock = Math.max(0, biodieselState.cpoStock - 5);
-      biodieselState.importDependency = 70 + buffer;
-      biodieselState.stability = "EMERGENCY";
+      biodieselState.blendRatio = 55 + Math.min(6, pressure);
+      biodieselState.importDependency = 75 + Math.min(8, pressure);
+      biodieselState.cpoStock = clamp(biodieselState.cpoStock - 5, 0, 100);
+      biodieselState.stability = "CRITICAL";
       break;
-
-    default:
-      biodieselState.blendRatio = 35;
-      biodieselState.stability = "NORMAL";
   }
 
-  /* -----------------------------
-     SAFETY BOUNDS (FIXED)
-  ------------------------------*/
-  biodieselState.blendRatio = Math.min(85, Math.max(30, biodieselState.blendRatio));
-  biodieselState.importDependency = Math.min(100, Math.max(40, biodieselState.importDependency));
-  biodieselState.cpoStock = Math.min(100, Math.max(0, biodieselState.cpoStock));
-
-  return biodieselState;
+  // final safety bounds
+  biodieselState.blendRatio = clamp(biodieselState.blendRatio, 35, 65);
+  biodieselState.importDependency = clamp(biodieselState.importDependency, 0, 100);
 }
-
-/* -----------------------------
-   BIODIESEL IMPACT INDEX v2
-------------------------------*/
-export function biodieselImpactIndex() {
-
-  const fxPressure = state.FX * 0.3;
-  const infraPressure = state.INF * 0.4;
-  const cpoPressure = (100 - biodieselState.cpoStock) * 0.3;
-  const importPressure = biodieselState.importDependency * 0.2;
-
-  return fxPressure + infraPressure + cpoPressure + importPressure;
-}
-
-/* -----------------------------
-   EXPORT MODULE
-------------------------------*/
-export default {
-  biodieselState,
-  updateBiodieselLayer,
-  biodieselImpactIndex
-};
