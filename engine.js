@@ -1,5 +1,6 @@
 /* =============================
-   SPD v12 // INTELLIGENCE ENGINE v2.1 (FULL CLEAN BUILD)
+   SPD v12.2 // AUTONOMOUS STABILIZATION ENGINE
+   (CLEAN + SAFE + SELF-CORRECTING)
 ============================= */
 
 /* -----------------------------
@@ -28,15 +29,10 @@ let history = [];
 let cascadeCount = 0;
 
 /* -----------------------------
-   ACCESSORS
+   CONSTANTS
 ------------------------------*/
-export function getCascadeCount() {
-  return cascadeCount;
-}
-
-export function getHistory() {
-  return history;
-}
+const MAX_HISTORY = 200;
+const DECAY_RATE = 0.92;
 
 /* -----------------------------
    SCENARIOS
@@ -55,74 +51,40 @@ function clamp(n, min = 0, max = 100) {
   return Math.max(min, Math.min(max, n));
 }
 
+function randomShock() {
+  return (Math.random() * 2 - 1) * 2; // mild volatility
+}
+
 function economicGap() {
   return state.demand - state.supply;
+}
+
+/* -----------------------------
+   SYSTEM VALIDATION
+------------------------------*/
+function isSystemType(type) {
+  return ["FX", "DC", "CYB", "INF"].includes(type);
 }
 
 /* -----------------------------
    ENERGY INDEX
 ------------------------------*/
 export function energyIndex() {
-  return state.FX * 0.6 + state.INF * 0.4;
-}
-
-/* -----------------------------
-   OIL PRICE ENGINE
-------------------------------*/
-function updateOilPrice() {
-  const stress =
-    state.FX * 0.3 +
-    state.INF * 0.4 +
-    economicGap() * 0.2;
-
-  state.oilPrice = clamp(70 + stress, 40, 140);
-}
-
-/* -----------------------------
-   BIODIESEL ENGINE
-------------------------------*/
-function updateBiodiesel(risk) {
-
-  const pressure =
-    state.FX * 0.2 +
-    state.INF * 0.3 +
-    Math.abs(economicGap()) * 0.2;
-
-  if (risk === "LOW") {
-    state.biodiesel = 35;
-    state.cpoReserve = clamp(state.cpoReserve + 1, 0, 100);
-  }
-
-  if (risk === "MEDIUM") {
-    state.biodiesel = 40 + pressure * 0.1;
-  }
-
-  if (risk === "HIGH") {
-    state.biodiesel = 50 + pressure * 0.2;
-    state.cpoReserve = clamp(state.cpoReserve - 2, 0, 100);
-  }
-
-  if (risk === "CRITICAL") {
-    state.biodiesel = 55 + pressure * 0.3;
-    state.cpoReserve = clamp(state.cpoReserve - 5, 0, 100);
-  }
-
-  state.biodiesel = clamp(state.biodiesel, 35, 70);
+  return state.FX * 0.5 + state.INF * 0.3 + state.DC * 0.2;
 }
 
 /* -----------------------------
    CASCADE ENGINE
 ------------------------------*/
 export function applyCascade(type) {
-
   switch (type) {
     case "FX":
-      state.DC += 3;
-      state.INF += 2;
+      state.DC += 2;
+      state.INF += 1;
       break;
 
     case "DC":
-      state.INF += 3;
+      state.INF += 2;
       state.CYB += 1;
       break;
 
@@ -132,7 +94,7 @@ export function applyCascade(type) {
       break;
 
     case "INF":
-      state.FX += 3;
+      state.FX += 2;
       state.DC += 1;
       break;
   }
@@ -141,87 +103,138 @@ export function applyCascade(type) {
 }
 
 /* -----------------------------
-   RISK ENGINE
+   OIL ENGINE (STOCHASTIC)
+------------------------------*/
+function updateOilPrice() {
+  const stress =
+    state.FX * 0.25 +
+    state.INF * 0.35 +
+    Math.abs(economicGap()) * 0.2;
+
+  state.oilPrice = clamp(70 + stress + randomShock(), 40, 140);
+}
+
+/* -----------------------------
+   BIODIESEL ENGINE (STABLE MODEL)
+------------------------------*/
+function updateBiodiesel(risk) {
+  const pressure =
+    state.FX * 0.2 +
+    state.INF * 0.25 +
+    Math.abs(economicGap()) * 0.15;
+
+  const baseMap = {
+    LOW: 35,
+    MEDIUM: 42,
+    HIGH: 50,
+    CRITICAL: 58
+  };
+
+  state.biodiesel = clamp(
+    baseMap[risk] + pressure * 0.15,
+    35,
+    70
+  );
+
+  if (risk === "HIGH") state.cpoReserve -= 2;
+  if (risk === "CRITICAL") state.cpoReserve -= 5;
+  if (risk === "LOW") state.cpoReserve += 1;
+
+  state.cpoReserve = clamp(state.cpoReserve);
+}
+
+/* -----------------------------
+   RISK ENGINE (BALANCED WEIGHTS)
 ------------------------------*/
 export function riskLevel() {
-
   const total =
-    state.FX * 1.2 +
-    state.DC * 1.1 +
-    state.CYB * 1.4 +
-    state.INF * 1.3 +
-    energyIndex() * 0.6 +
-    Math.abs(economicGap()) * 1.2 +
-    (100 - state.cpoReserve) * 0.5;
+    state.FX * 1.0 +
+    state.DC * 1.0 +
+    state.CYB * 1.1 +
+    state.INF * 1.0 +
+    energyIndex() * 0.4 +
+    Math.abs(economicGap()) * 0.8 +
+    (100 - state.cpoReserve) * 0.4;
 
-  if (total > 140) return "CRITICAL";
-  if (total > 90) return "HIGH";
-  if (total > 50) return "MEDIUM";
+  if (total > 150) return "CRITICAL";
+  if (total > 95) return "HIGH";
+  if (total > 55) return "MEDIUM";
   return "LOW";
 }
 
 /* -----------------------------
-   SOLUTIONS
+   AUTONOMOUS STABILIZER
 ------------------------------*/
-export function solutions(level) {
+function stabilizeSystem() {
+  const risk = riskLevel();
 
-  if (level === "CRITICAL") {
-    return [
-      "Emergency shutdown buffers",
-      "Auto load shedding",
-      "System isolation"
-    ];
-  }
+  const damping = {
+    LOW: 0.98,
+    MEDIUM: 0.95,
+    HIGH: 0.92,
+    CRITICAL: 0.88
+  }[risk];
 
-  if (level === "HIGH") {
-    return [
-      "Activate reserves",
-      "Reduce dependency",
-      "Stabilise system"
-    ];
-  }
-
-  if (level === "MEDIUM") {
-    return [
-      "Monitor volatility",
-      "Minor corrections"
-    ];
-  }
-
-  return ["Normal operations"];
+  state.FX *= damping;
+  state.DC *= damping;
+  state.CYB *= damping;
+  state.INF *= damping;
 }
 
 /* -----------------------------
-   MAIN INJECT ENGINE (FULL ROUTER)
+   DECAY SYSTEM (TIME SIMULATION)
+------------------------------*/
+function applyDecay() {
+  state.FX *= DECAY_RATE;
+  state.DC *= DECAY_RATE;
+  state.CYB *= DECAY_RATE;
+  state.INF *= DECAY_RATE;
+}
+
+/* -----------------------------
+   SOLUTIONS ENGINE
+------------------------------*/
+export function solutions(level) {
+  const map = {
+    CRITICAL: [
+      "Emergency isolation protocol",
+      "Auto load shedding",
+      "System fragmentation mode"
+    ],
+    HIGH: [
+      "Reserve activation",
+      "Demand throttling",
+      "Risk containment layer"
+    ],
+    MEDIUM: [
+      "Monitoring reinforcement",
+      "Soft balancing adjustments"
+    ],
+    LOW: ["Normal operations"]
+  };
+
+  return map[level];
+}
+
+/* -----------------------------
+   MAIN ENGINE
 ------------------------------*/
 export function inject(type) {
-
-  /* ---------------- MARKET COMMANDS ---------------- */
-
-  if (type === "OIL_HIGH") {
-    state.oilPrice = clamp(state.oilPrice + 20, 40, 140);
-  }
-
-  if (type === "OIL_LOW") {
-    state.oilPrice = clamp(state.oilPrice - 20, 40, 140);
-  }
-
-  if (type === "BIODIESEL_SHORT") {
-    state.cpoReserve = clamp(state.cpoReserve - 15, 0, 100);
-    state.biodiesel = clamp(state.biodiesel - 10, 35, 70);
-  }
-
-  /* ---------------- SYSTEM COMMANDS ---------------- */
-
-  if (state[type] !== undefined) {
-    state[type] += 10;
+  if (isSystemType(type)) {
+    state[type] = clamp(state[type] + 10);
     applyCascade(type);
   }
+
+  if (type === "OIL_HIGH") state.oilPrice += 15;
+  if (type === "OIL_LOW") state.oilPrice -= 15;
 
   const risk = riskLevel();
 
   updateOilPrice();
   updateBiodiesel(risk);
+
+  stabilizeSystem();
+  applyDecay();
 
   history.push({
     type,
@@ -229,6 +242,8 @@ export function inject(type) {
     oilPrice: state.oilPrice,
     cpo: state.cpoReserve
   });
+
+  if (history.length > MAX_HISTORY) history.shift();
 
   return {
     state: { ...state },
@@ -239,21 +254,20 @@ export function inject(type) {
 }
 
 /* -----------------------------
-   RESET ENGINE
+   RESET
 ------------------------------*/
 export function reset() {
-  state.FX = 0;
-  state.DC = 0;
-  state.CYB = 0;
-  state.INF = 0;
+  Object.assign(state, {
+    FX: 0, DC: 0, CYB: 0, INF: 0,
+    biodiesel: 35,
+    cpoReserve: 100,
+    oilPrice: 70,
+    supply: 100,
+    demand: 100,
+    subsidy: 0,
+    consumerCost: 50
+  });
 
-  state.biodiesel = 35;
-  state.cpoReserve = 100;
-
-  state.oilPrice = 70;
-  state.supply = 100;
-  state.demand = 100;
-
-  cascadeCount = 0;
   history = [];
+  cascadeCount = 0;
 }
