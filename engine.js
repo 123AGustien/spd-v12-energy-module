@@ -9,7 +9,7 @@ export const state = {
 };
 
 /* -----------------------------
-   INTERNAL STATE (SAFE COUNTER)
+   CASCADE COUNTER (SAFE)
 ------------------------------*/
 let cascadeCount = 0;
 
@@ -18,7 +18,7 @@ export function getCascadeCount() {
 }
 
 /* -----------------------------
-   SCENARIOS (UI READY MODEL)
+   SCENARIOS
 ------------------------------*/
 export const scenarios = {
   FX: {
@@ -44,7 +44,7 @@ export const scenarios = {
 };
 
 /* -----------------------------
-   UTILS
+   UTIL
 ------------------------------*/
 function clamp(n, min = 0, max = 100) {
   return Math.max(min, Math.min(max, n));
@@ -58,27 +58,11 @@ export function energyIndex() {
 }
 
 /* -----------------------------
-   🆕 MARKET SIGNAL LAYER (ADDED)
-------------------------------*/
-export function oilMarketSignal() {
-
-  const supply = state.cpoReserve;
-  const demandPressure = state.FX + state.INF + state.DC + state.CYB;
-
-  const imbalance = demandPressure - supply;
-
-  if (imbalance > 30) return "HIGH_PRICE_PRESSURE";
-  if (imbalance > 10) return "RISING_PRICE";
-  if (imbalance < -10) return "LOW_PRICE";
-  return "STABLE";
-}
-
-/* -----------------------------
-   BIODIESEL ENGINE (STABLE VERSION)
+   BIODIESEL ENGINE
 ------------------------------*/
 export function updateBiodieselLevel(risk) {
 
-  const pressure = (state.FX * 0.2 + state.INF * 0.3);
+  const pressure = state.FX * 0.2 + state.INF * 0.3;
 
   switch (risk) {
 
@@ -106,7 +90,7 @@ export function updateBiodieselLevel(risk) {
 }
 
 /* -----------------------------
-   CASCADE ENGINE (CONTROLLED FLOW)
+   CASCADE ENGINE
 ------------------------------*/
 export function applyCascade(type) {
 
@@ -192,7 +176,7 @@ export function solutions(level) {
 }
 
 /* -----------------------------
-   MAIN ACTION ENGINE
+   MAIN ENGINE
 ------------------------------*/
 export function inject(type) {
 
@@ -209,14 +193,13 @@ export function inject(type) {
     risk,
     policy: policyState(risk),
     energy: energyIndex(),
-    cascadeCount,
-    scenario: scenarios[type],
-    market: oilMarketSignal()   // ✅ ADDED OUTPUT
+    cascade: cascadeCount,
+    scenario: scenarios[type]
   };
 }
 
 /* -----------------------------
-   RESET ENGINE (SAFE)
+   RESET ENGINE
 ------------------------------*/
 export function reset() {
 
