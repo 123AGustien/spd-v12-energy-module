@@ -3,7 +3,6 @@ import {
   scenarios,
   inject,
   riskLevel,
-  policyState,
   solutions,
   cascadeCount
 } from "./engine.js";
@@ -32,13 +31,17 @@ window.addEventListener("DOMContentLoaded", () => {
     stab: document.getElementById("stab")
   };
 
-  function render() {
+  let activeScenario = "FX";
 
+  function renderAll() {
+
+    // CORE STATE
     if (el.FX) el.FX.innerText = state.FX;
     if (el.DC) el.DC.innerText = state.DC;
     if (el.CYB) el.CYB.innerText = state.CYB;
     if (el.INF) el.INF.innerText = state.INF;
 
+    // BIODIESEL LAYER
     if (el.blend) el.blend.innerText = biodieselState.blendRatio;
     if (el.cpo) el.cpo.innerText = biodieselState.cpoStock;
     if (el.imp) el.imp.innerText = biodieselState.importDependency;
@@ -47,16 +50,16 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPanels();
   }
 
-  function renderPanels(type = "FX") {
+  function renderPanels() {
 
     const risk = riskLevel();
 
-    const scenario = scenarios?.[type] || {
+    const scenario = scenarios?.[activeScenario] || {
       name: "NO SCENARIO",
       impact: "Awaiting input"
     };
 
-    const list = typeof solutions === "function"
+    const list = Array.isArray(solutions?.(risk))
       ? solutions(risk)
       : [];
 
@@ -88,7 +91,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // GLOBAL BUTTON CONTROLLER
   window.trigger = function(type) {
+
+    activeScenario = type;
 
     const result = inject(type);
 
@@ -96,12 +102,15 @@ window.addEventListener("DOMContentLoaded", () => {
       updateBiodieselLayer(result.risk);
     }
 
-    renderPanels(type);
-    render();
+    renderAll();
 
     return result;
   };
 
-  render();
-  setInterval(render, 500);
+  // INITIAL RENDER
+  renderAll();
+
+  // SAFE LIGHT REFRESH (NO STATE OVERWRITE)
+  setInterval(renderAll, 1000);
+
 });
