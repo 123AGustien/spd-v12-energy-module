@@ -1,4 +1,96 @@
+# 🛰 SPD v12 ENERGY MODULE
 
+## 📌 Overview
+Adaptive energy scenario simulation system for FX, infrastructure, and biodiesel policy modelling.
+
+---
+
+# 🧠 SYSTEM ARCHITECTURE
+
+SPD v12 operates across 4 layers:
+
+1. FX / INF / DC / CYB Core System  
+2. Risk Engine (LOW → CRITICAL)  
+3. Biodiesel Response Layer  
+4. Scenario Injection System  
+
+---
+
+# ⚙️ SCENARIO SYSTEM
+
+## What are Scenarios?
+
+Scenarios are controlled stress events that simulate real-world disruptions.
+
+They activate:
+- Rule Engine
+- Risk Engine
+- Solution Engine
+- Biodiesel adjustments
+
+---
+
+## 🔧 CORE SCENARIO TYPES
+
+### 💱 FX SCENARIOS
+- Currency volatility (SGD/IDR)
+- FX shock events
+- Liquidity stress
+
+### 🌐 INF SCENARIOS
+- Infrastructure failure
+- API/system downtime
+- Workflow disruption
+
+### ⚡ DC SCENARIOS
+- Load spikes
+- compute stress
+- energy instability
+
+### 🛡 CYB SCENARIOS
+- cyber intrusion
+- API attack simulation
+- data corruption risk
+
+### 🔋 ENERGY / BIODIESEL SCENARIOS
+- CPO depletion
+- import dependency shock
+- blend ratio instability
+
+---
+
+# 🧪 SCENARIO ANALYSIS
+
+## 🟠 Domestic Supply Low
+- CPO decreases
+- Blend Ratio increases
+- Import Dependency increases
+- Stability → WATCH / STRESSED
+
+---
+
+## 🟢 Oil Price Decline
+- FX pressure reduced
+- Import exposure less risky
+- Stability improves
+
+---
+
+## ⚖️ Combined Case
+Domestic low + oil price drop:
+
+- Balanced equilibrium state
+- Stability remains WATCH
+- System avoids collapse
+
+---
+
+# 🧠 KEY INSIGHT
+
+Import Dependency is not risk alone.
+
+```text id="risk_formula"
+System Risk = Import Dependency × FX Pressure × Oil Price Pressure
 WHAT YOUR SYSTEM NOW DOES
 ✔ 1. Monitoring (real-time observation)
 You can track:
