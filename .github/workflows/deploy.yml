@@ -1,50 +1,111 @@
-name: SPD v12 Energy Module Deploy
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM</title>
 
-on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at center, #070b12, #020409);
+  color: #cfe8ff;
+}
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+.header {
+  padding: 12px;
+  background: #0c1625;
+  text-align: center;
+  font-weight: bold;
+}
 
-# 🔒 STRONG concurrency lock
-concurrency:
-  group: github-pages
-  cancel-in-progress: false
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+}
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+.panel {
+  background: #0b1220;
+  padding: 12px;
+  border: 1px solid #1c2a3a;
+  border-radius: 8px;
+}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+button {
+  padding: 8px;
+  margin-top: 6px;
+  width: 100%;
+  background: #1c2f4a;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+button:hover {
+  background: #2a4b73;
+}
+</style>
+</head>
 
-      - name: Build site folder
-        run: |
-          mkdir -p dist
-          cp index.html engine.js graph-engine.js ui.js README.md dist/ || true
+<body>
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
+<div class="header">
+SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
+</div>
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
+<div class="container">
 
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  <!-- FX PANEL -->
+  <div class="panel">
+    <h3>FX / INF SYSTEM</h3>
+    <div>FX: <span id="FX">0</span></div>
+    <div>INF: <span id="INF">0</span></div>
+    <div>DC: <span id="DC">0</span></div>
+    <div>CYB: <span id="CYB">0</span></div>
 
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+    <button onclick="trigger('FX')">Inject FX</button>
+    <button onclick="trigger('INF')">Inject INF</button>
+  </div>
+
+  <!-- BIODIESEL PANEL -->
+  <div class="panel">
+    <h3>BIODIESEL LAYER</h3>
+    <div>Blend Ratio: <span id="blend">35</span></div>
+    <div>CPO Stock: <span id="cpo">100</span></div>
+    <div>Import Dependency: <span id="imp">60</span></div>
+    <div>Stability: <span id="stab">NORMAL</span></div>
+  </div>
+
+  <!-- SCENARIO PANEL -->
+  <div class="panel" id="scenarioPanel">
+    <h3>SCENARIO PANEL</h3>
+    Idle
+  </div>
+
+  <!-- RISK PANEL -->
+  <div class="panel" id="riskPanel">
+    <h3>RISK PANEL</h3>
+    Risk: LOW
+  </div>
+
+  <!-- SOLUTION PANEL (FIXED) -->
+  <div class="panel" id="solutionPanel">
+    <h3>SOLUTION PANEL</h3>
+    Awaiting scenario...
+  </div>
+
+  <!-- ACTION PANEL -->
+  <div class="panel" id="actionPanel">
+    <h3>ACTION SEQUENCE</h3>
+    Awaiting input...
+  </div>
+
+</div>
+
+<!-- UI CONTROLLER -->
+<script type="module" src="./ui.js"></script>
+
+</body>
+</html>
