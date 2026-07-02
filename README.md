@@ -1,3 +1,118 @@
+Here is a clean README section for your BIODIESEL LAYER solution based on your current SPD v12 engine state.
+You can paste this directly into your GitHub README.
+🛢 SPD v12 // BIODIESEL LAYER MODULE
+📌 Overview
+The Biodiesel Layer is a dynamic energy buffer system inside SPD v12.
+It simulates how internal fuel blending responds to:
+FX volatility (currency pressure)
+INF stress (infrastructure/logistics load)
+System risk level (LOW → CRITICAL)
+It is NOT static — it adjusts in real time based on system pressure.
+⚙️ CURRENT STATE MODEL
+Blend Ratio: 35.0
+CPO Stock: 100
+Import Dependency: 60.0
+Stability: NORMAL
+🧠 WHAT EACH VALUE MEANS
+🛢 Blend Ratio
+Represents internal biodiesel mix level.
+Higher = more internal fuel substitution
+Lower = dependency on external oil
+Range:
+30 → 85
+🌴 CPO Stock
+Palm oil reserve index (internal supply buffer).
+100 = full reserve
+0 = depleted stress state
+Behavior:
+decreases under HIGH / CRITICAL stress
+recovers slowly under LOW risk
+🌍 Import Dependency
+External fuel reliance level.
+60 = moderate dependency baseline
+increases under stress (system exposure rises)
+Meaning:
+higher value = more sensitive to global oil price and FX shocks
+🟢 Stability
+System health indicator:
+State
+Meaning
+NORMAL
+stable operations
+WATCH
+early stress detected
+STRESSED
+active pressure
+EMERGENCY
+critical instability
+⚙️ HOW THE ENGINE WORKS
+🧠 Core Logic
+The system calculates pressure:
+Pressure = FX × 0.25 + INF × 0.35
+Then applies a buffer multiplier:
+Buffer = Pressure × 0.4
+This buffer controls how strongly biodiesel responds.
+🔄 RESPONSE BEHAVIOR
+🟢 LOW RISK
+Blend resets to baseline (35)
+System stabilizes
+Import dependency normalised
+🟡 MEDIUM RISK
+Slight increase in blend ratio
+Early buffer activation
+Mild dependency fluctuation
+🟠 HIGH RISK
+Strong blend increase
+CPO depletion begins
+Import dependency rises
+🔴 CRITICAL RISK
+Maximum buffer activation
+Rapid blend escalation
+Emergency stability state
+📊 HOW TO MONITOR THE SYSTEM
+1. Watch Blend Ratio
+Rising steadily = system compensating for stress
+Sudden spike = high FX or INF shock
+2. Monitor Import Dependency
+Increasing value = rising external vulnerability
+Key early warning indicator
+3. Track CPO Stock
+Falling stock = internal buffer depletion
+If below 30 → system entering fatigue state
+4. Stability Indicator
+Pattern
+Meaning
+NORMAL
+stable equilibrium
+WATCH
+early volatility
+STRESSED
+active correction mode
+EMERGENCY
+buffer overloaded
+5. Pressure Index (hidden driver)
+Calculated internally:
+FX + INF → system pressure
+If pressure rises:
+Blend increases
+Stability degrades gradually
+Import dependency shifts upward
+⚠️ IMPORTANT BEHAVIOR RULES
+System is adaptive, not static
+Blend is auto-regulated by pressure
+Risk does NOT instantly break system (it cascades gradually)
+Stability is emergent, not manually set
+🧭 SUMMARY
+The Biodiesel Layer acts as:
+🧠 a real-time energy buffer simulation that absorbs FX and infrastructure stress by dynamically adjusting fuel blending and dependency exposure.
+If you want next upgrade, I can add:
+📈 live dashboard README diagram
+⚡ risk-to-blend visual flowchart
+🧠 predictive warning layer (before MEDIUM risk triggers)
+🔁 recovery logic explanation section
+Just tell me.
+
+
 Your site is live at https://123agustien.github.io/spd-v12-energy-module/
 lePD v12 Energy Module cockpit for adaptive energy scenario simulation, risk evaluation, and policy response modelling (biodiesel, solar, and energy resilience logic).
 
