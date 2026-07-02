@@ -10,9 +10,9 @@ permissions:
   pages: write
   id-token: write
 
-# 🔒 ONLY cancel build conflicts (not deploy stage)
+# 🔒 Prevent Pages deployment collisions (correct scope)
 concurrency:
-  group: pages-build
+  group: pages-deploy
   cancel-in-progress: true
 
 jobs:
@@ -23,6 +23,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 🟢 REQUIRED: initializes Pages environment
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
