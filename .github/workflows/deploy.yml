@@ -10,8 +10,9 @@ permissions:
   pages: write
   id-token: write
 
+# 🔒 prevents overlapping deploys + cancels old runs safely
 concurrency:
-  group: pages
+  group: pages-deploy
   cancel-in-progress: true
 
 jobs:
@@ -22,13 +23,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Clean workspace
+        run: rm -rf dist build || true
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./
+          path: .
 
       - name: Deploy
         id: deployment
