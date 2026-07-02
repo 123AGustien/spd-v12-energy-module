@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPD v12 // ENERGY MODULE COCKPIT</title>
+<title>SPD v12 // ENERGY MODULE SIMULATOR</title>
 
 <style>
 body{
@@ -43,7 +43,7 @@ text-align:center;
 
 button{
 margin:4px;
-padding:10px;
+padding:8px;
 background:#1f3b5c;
 color:white;
 border:none;
@@ -55,20 +55,20 @@ button:hover{
 background:#2b568a;
 }
 
-.section{
+.module{
 margin:10px;
 padding:10px;
 background:#0a0f18;
 font-size:13px;
-border-left:2px solid #1f3b5c;
+border-radius:6px;
 }
 
 #log{
 position:absolute;
 right:10px;
-top:120px;
+top:140px;
 width:320px;
-height:360px;
+height:340px;
 overflow:auto;
 background:#0a0f18;
 padding:10px;
@@ -80,10 +80,11 @@ border-left:2px solid #1f3b5c;
 
 <body>
 
-<div class="header">🛰 SPD v12 // ENERGY MODULE COCKPIT</div>
+<div class="header">🛰 SPD v12 // ENERGY MODULE SIMULATOR</div>
 
 <div id="statusBar">STATUS: STABLE</div>
 
+<!-- METRICS -->
 <div class="panel">
 <div class="card">FX<div id="FX" class="value">0</div></div>
 <div class="card">DC<div id="DC" class="value">0</div></div>
@@ -91,31 +92,29 @@ border-left:2px solid #1f3b5c;
 <div class="card">INF<div id="INF" class="value">0</div></div>
 </div>
 
-<div class="section">
-<b>SCENARIO PANEL</b><br>
-<span id="scenarioText">Idle</span>
+<!-- MODULE PANELS -->
+<div class="module" id="scenarioPanel">
+<b>SCENARIO PANEL</b><br>Idle
 </div>
 
-<div class="section">
-<b>RISK PANEL</b><br>
-<span id="riskText">Risk: LOW</span>
+<div class="module" id="riskPanel">
+<b>RISK PANEL</b><br>Risk: LOW
 </div>
 
-<div class="section">
-<b>SOLUTION OPTIONS</b><br>
-<span id="solutionText">-</span>
+<div class="module" id="solutionPanel">
+<b>SOLUTION OPTIONS</b><br>- None
 </div>
 
-<div class="section">
-<b>ACTION SEQUENCE PROMPT</b><br>
-<span id="actionText">Awaiting input</span>
+<div class="module" id="actionPanel">
+<b>ACTION SEQUENCE PROMPT</b><br>- Awaiting input
 </div>
 
+<!-- BUTTONS -->
 <div style="text-align:center">
-<button onclick="run('NORMAL')">NORMAL</button>
-<button onclick="run('CONTINGENCY')">CONTINGENCY</button>
-<button onclick="run('STRATEGIC')">STRATEGIC</button>
-<button onclick="run('EVAL')">EVALUATION</button>
+<button onclick="inject('FX')">FX STRESS</button>
+<button onclick="inject('DC')">DC LOAD</button>
+<button onclick="inject('CYB')">CYBER EVENT</button>
+<button onclick="inject('INF')">INFRA STRAIN</button>
 <button onclick="resetAll()">RESET</button>
 </div>
 
@@ -123,60 +122,143 @@ border-left:2px solid #1f3b5c;
 
 <script>
 
-const state = {FX:0,DC:0,CYB:0,INF:0};
-let log=[];
-
-const scenarios={
-NORMAL:{name:"Normal",action:"Stable energy mix"},
-CONTINGENCY:{name:"Crisis",action:"Increase biodiesel B50+"},
-STRATEGIC:{name:"Reserve",action:"Deploy reserves"},
-EVAL:{name:"Evaluation",action:"Analyze macro indicators"}
+/* STATE */
+const state = {
+FX:0,
+DC:0,
+CYB:0,
+INF:0
 };
 
-function risk(){
-let r=state.FX+state.DC+state.CYB+state.INF;
-if(r>60)return"CRITICAL";
-if(r>30)return"HIGH";
-if(r>10)return"MEDIUM";
-return"LOW";
+let log = [];
+
+/* SCENARIOS */
+const scenarios = {
+FX:{
+name:"Financial Stress Injection",
+desc:"FX volatility increases system instability",
+impact:"Spreads into DC liquidity pressure"
+},
+DC:{
+name:"Data Centre Load Spike",
+desc:"Compute demand surge detected",
+impact:"Triggers INF stress propagation"
+},
+CYB:{
+name:"Cyber Event Triggered",
+desc:"Security anomaly detected in network layer",
+impact:"Reduces system reliability"
+},
+INF:{
+name:"Infrastructure Strain",
+desc:"Physical system stress escalation",
+impact:"Feeds back into FX instability loop"
+}
+};
+
+/* LOG */
+function addLog(msg){
+log.push(msg);
+document.getElementById("log").innerHTML =
+log.slice(-12).map(x=>"→ "+x).join("<br>");
 }
 
-function solutions(m){
-if(m==="CONTINGENCY")return["Increase B50+","Reduce imports","Activate CPO"];
-if(m==="STRATEGIC")return["Release reserves","Balance supply"];
-if(m==="NORMAL")return["Maintain solar dominance","Reduce subsidy load"];
-if(m==="EVAL")return["Monitor oil & FX"];
-return["-"];
+/* RISK ENGINE */
+function riskLevel(){
+let total = state.FX + state.DC + state.CYB + state.INF;
+
+if(total > 60) return "CRITICAL";
+if(total > 30) return "HIGH";
+if(total > 10) return "MEDIUM";
+return "LOW";
 }
 
-function run(m){
-state.FX+=10;
-const s=scenarios[m];
-
-scenarioText.innerHTML=s.name;
-riskText.innerText="Risk: "+risk();
-solutionText.innerHTML=solutions(m).map(x=>"• "+x).join("<br>");
-actionText.innerText=s.action;
-
-log.push(m);
-document.getElementById("log").innerHTML=log.slice(-10).join("<br>");
+/* SOLUTION ENGINE */
+function solutions(level){
+if(level==="CRITICAL"){
+return [
+"Emergency stabilisation protocol activated",
+"Auto load shedding enabled",
+"System isolation engaged"
+];
+}
+if(level==="HIGH"){
+return [
+"Partial damping applied",
+"Risk redistribution active"
+];
+}
+if(level==="MEDIUM"){
+return [
+"Monitoring intensified",
+"Minor balancing active"
+];
+}
+return ["No intervention required"];
 }
 
+/* ACTION */
+function inject(type){
+
+state[type] += 10;
+
+const s = scenarios[type];
+const risk = riskLevel();
+
+document.getElementById("scenarioPanel").innerHTML =
+"<b>SCENARIO PANEL</b><br>" +
+s.name + "<br>" + s.desc;
+
+document.getElementById("riskPanel").innerHTML =
+"<b>RISK PANEL</b><br>Risk: " + risk;
+
+document.getElementById("solutionPanel").innerHTML =
+"<b>SOLUTION OPTIONS</b><br>" +
+solutions(risk).map(x=>"• "+x).join("<br>");
+
+document.getElementById("actionPanel").innerHTML =
+"<b>ACTION SEQUENCE PROMPT</b><br>" +
+"Step 1: Detect " + type + "<br>" +
+"Step 2: Evaluate cascade impact<br>" +
+"Step 3: Apply mitigation → " + s.impact;
+
+addLog("INJECT " + type + " → " + s.name);
+
+updateStatus();
+}
+
+/* RESET */
 function resetAll(){
-state.FX=state.DC=state.CYB=state.INF=0;
+state.FX=0;
+state.DC=0;
+state.CYB=0;
+state.INF=0;
 log=[];
-scenarioText.innerText="Idle";
-riskText.innerText="Risk: LOW";
-solutionText.innerText="-";
-actionText.innerText="Awaiting input";
+addLog("SYSTEM RESET");
+updateStatus();
+}
+
+/* STATUS */
+function updateStatus(){
+document.getElementById("statusBar").innerText =
+"STATUS: " + riskLevel();
+}
+
+/* RENDER */
+function render(){
+FX.innerText = state.FX;
+DC.innerText = state.DC;
+CYB.innerText = state.CYB;
+INF.innerText = state.INF;
 }
 
 setInterval(()=>{
-FX.innerText=state.FX;
-DC.innerText=state.DC;
-CYB.innerText=state.CYB;
-INF.innerText=state.INF;
+render();
+updateStatus();
 },500);
+
+render();
+updateStatus();
 
 </script>
 
