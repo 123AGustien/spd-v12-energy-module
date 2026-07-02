@@ -1,5 +1,5 @@
 /* =============================
-   SPD v12 // INTELLIGENCE ENGINE v2.1 (FINAL)
+   SPD v12 // INTELLIGENCE ENGINE v2.1 (FULL CLEAN BUILD)
 ============================= */
 
 /* -----------------------------
@@ -22,13 +22,13 @@ export const state = {
 };
 
 /* -----------------------------
-   INTERNAL MEMORY
+   MEMORY
 ------------------------------*/
 let history = [];
 let cascadeCount = 0;
 
 /* -----------------------------
-   PUBLIC ACCESSORS
+   ACCESSORS
 ------------------------------*/
 export function getCascadeCount() {
   return cascadeCount;
@@ -116,7 +116,6 @@ function updateBiodiesel(risk) {
 export function applyCascade(type) {
 
   switch (type) {
-
     case "FX":
       state.DC += 3;
       state.INF += 2;
@@ -193,16 +192,31 @@ export function solutions(level) {
 }
 
 /* -----------------------------
-   MAIN INJECT ENGINE
+   MAIN INJECT ENGINE (FULL ROUTER)
 ------------------------------*/
 export function inject(type) {
 
-  // safe injection
-  if (state[type] !== undefined) {
-    state[type] += 10;
+  /* ---------------- MARKET COMMANDS ---------------- */
+
+  if (type === "OIL_HIGH") {
+    state.oilPrice = clamp(state.oilPrice + 20, 40, 140);
   }
 
-  applyCascade(type);
+  if (type === "OIL_LOW") {
+    state.oilPrice = clamp(state.oilPrice - 20, 40, 140);
+  }
+
+  if (type === "BIODIESEL_SHORT") {
+    state.cpoReserve = clamp(state.cpoReserve - 15, 0, 100);
+    state.biodiesel = clamp(state.biodiesel - 10, 35, 70);
+  }
+
+  /* ---------------- SYSTEM COMMANDS ---------------- */
+
+  if (state[type] !== undefined) {
+    state[type] += 10;
+    applyCascade(type);
+  }
 
   const risk = riskLevel();
 
@@ -228,7 +242,6 @@ export function inject(type) {
    RESET ENGINE
 ------------------------------*/
 export function reset() {
-
   state.FX = 0;
   state.DC = 0;
   state.CYB = 0;
