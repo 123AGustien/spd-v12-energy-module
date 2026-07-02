@@ -1,5 +1,77 @@
+# 🧠 SPD v12 // SCENARIO ANALYSIS MODULE
 
+## 📌 Overview
 
+The SPD v12 system simulates energy stability under combined pressure from:
+
+- FX volatility  
+- Infrastructure load (INF)  
+- Domestic fuel availability (CPO)  
+- External oil price movement  
+- Import dependency exposure  
+
+The system does not treat variables independently — it evaluates **combined systemic behavior**.
+
+---
+
+# ⚙️ CORE SCENARIO RULES
+
+## 🟠 Case A: Domestic Supply is Low
+
+### 📉 Condition
+- CPO Stock decreases
+
+### 🧠 System Impact
+- Internal fuel buffer weakens  
+- Blend Ratio increases (compensation behavior)  
+- Import Dependency increases  
+- Stability shifts toward WATCH or STRESSED  
+
+### 📌 Interpretation
+> System is forced to compensate for weak domestic resilience.
+
+---
+
+## 🟢 Case B: Oil Prices Decline
+
+### 📉 Condition
+- External oil becomes cheaper  
+- FX pressure reduces  
+
+### 🧠 System Impact
+- Import exposure becomes less risky  
+- Blend pressure stabilizes  
+- Stability improves gradually  
+
+### 📌 Interpretation
+> External environment absorbs part of system stress.
+
+---
+
+## ⚖️ Case C: Domestic Supply Low + Oil Prices Decline
+
+### 📉 Condition Combination
+- Weak internal supply  
+- Favorable external pricing  
+
+### 🧠 System Behavior
+- Blend Ratio increases moderately (not aggressively)  
+- Import Dependency increases but becomes less harmful  
+- Stability holds at WATCH (not collapse)  
+
+### 📌 Interpretation
+> System enters a **balanced but fragile equilibrium state**
+
+---
+
+# 🧠 KEY INSIGHT (IMPORTANT)
+
+Import Dependency is NOT inherently negative.
+
+Its impact depends on external conditions:
+
+```text
+System Risk = Import Dependency × FX Pressure × Oil Price Pressure
 🟢 1. Reduce Import Dependency (<55 target)
 🟢 2. Increase buffer smoothing (blend volatility reduction)
 
