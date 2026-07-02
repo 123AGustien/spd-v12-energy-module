@@ -4,13 +4,8 @@ import {
   inject,
   riskLevel,
   solutions,
-  cascadeCount
+  getCascadeCount
 } from "./engine.js";
-
-import {
-  biodieselState,
-  updateBiodieselLayer
-} from "./biodiesel-engine.js";
 
 window.addEventListener("DOMContentLoaded", () => {
 
@@ -20,7 +15,6 @@ window.addEventListener("DOMContentLoaded", () => {
     CYB: document.getElementById("CYB"),
     INF: document.getElementById("INF"),
 
-    // FIXED: split UI targets (IMPORTANT)
     scenarioButtons: document.getElementById("scenarioButtons"),
     scenarioInfo: document.getElementById("scenarioInfo"),
 
@@ -37,7 +31,7 @@ window.addEventListener("DOMContentLoaded", () => {
   let activeScenario = "FX";
 
   // -----------------------------
-  // CORE SYSTEM RENDER
+  // CORE RENDER
   // -----------------------------
   function renderAll() {
 
@@ -47,11 +41,11 @@ window.addEventListener("DOMContentLoaded", () => {
     if (el.CYB) el.CYB.innerText = state.CYB;
     if (el.INF) el.INF.innerText = state.INF;
 
-    // BIODIESEL SYSTEM
-    if (el.blend) el.blend.innerText = biodieselState.blendRatio.toFixed(1);
-    if (el.cpo) el.cpo.innerText = biodieselState.cpoStock;
-    if (el.imp) el.imp.innerText = biodieselState.importDependency.toFixed(1);
-    if (el.stab) el.stab.innerText = biodieselState.stability;
+    // BIODIESEL (FIXED: single source of truth)
+    if (el.blend) el.blend.innerText = state.biodiesel.toFixed(1);
+    if (el.cpo) el.cpo.innerText = state.cpoReserve;
+    if (el.imp) el.imp.innerText = "—";
+    if (el.stab) el.stab.innerText = "SYSTEM MODE";
 
     renderPanels();
   }
@@ -68,69 +62,59 @@ window.addEventListener("DOMContentLoaded", () => {
       description: "Awaiting input"
     };
 
-    const list = typeof solutions === "function"
-      ? solutions(risk)
-      : [];
+    const list = solutions(risk);
 
     // RISK PANEL
-    if (el.riskPanel) {
-      el.riskPanel.innerHTML = `
-        <h3>RISK PANEL</h3>
-        Risk: ${risk}
-      `;
-    }
+    el.riskPanel.innerHTML = `
+      <h3>RISK PANEL</h3>
+      Risk: ${risk}
+    `;
 
     // SOLUTION PANEL
-    if (el.solutionPanel) {
-      el.solutionPanel.innerHTML = `
-        <h3>SOLUTION PANEL</h3>
-        ${list.length ? list.map(x => `• ${x}`).join("<br>") : "No solutions"}
-      `;
-    }
+    el.solutionPanel.innerHTML = `
+      <h3>SOLUTION PANEL</h3>
+      ${list.map(x => `• ${x}`).join("<br>")}
+    `;
 
     // ACTION PANEL
-    if (el.actionPanel) {
-      el.actionPanel.innerHTML = `
-        <h3>ACTION SEQUENCE</h3>
-        1. Detect input<br>
-        2. Cascade: ${cascadeCount}<br>
-        3. Mitigate<br>
-        4. Stabilize
-      `;
-    }
+    el.actionPanel.innerHTML = `
+      <h3>ACTION SEQUENCE</h3>
+      1. Detect input<br>
+      2. Cascade: ${getCascadeCount()}<br>
+      3. Mitigate<br>
+      4. Stabilize
+    `;
 
     renderScenarioInfo(scenario);
   }
 
   // -----------------------------
-  // SCENARIO INFO (SELECTED)
+  // SCENARIO INFO
   // -----------------------------
   function renderScenarioInfo(scenario) {
-
-    if (!el.scenarioInfo) return;
 
     el.scenarioInfo.innerHTML = `
       <div style="margin-top:10px;">
         <b>${scenario.name}</b><br>
-        <small>${scenario.description || "No description available"}</small>
+        <small>${scenario.description}</small><br>
+        <small><i>${scenario.impact || ""}</i></small>
       </div>
     `;
   }
 
   // -----------------------------
-  // SCENARIO BUTTONS (LIST)
+  // SCENARIO BUTTONS
   // -----------------------------
   function renderScenarioButtons() {
 
-    if (!el.scenarioButtons) return;
-
     el.scenarioButtons.innerHTML = "";
 
-    Object.keys(scenarios).forEach(key => {
+    Object.entries(scenarios).forEach(([key, s]) => {
 
       const btn = document.createElement("button");
       btn.className = "scenario-btn";
-      btn.innerText = scenarios[key].name || key;
+
+      btn.innerHTML = `<b>${s.name}</b>`;
 
       btn.onclick = () => trigger(key);
 
@@ -139,15 +123,13 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // GLOBAL TRIGGER ENGINE
+  // ENGINE TRIGGER
   // -----------------------------
   window.trigger = function(type) {
 
     activeScenario = type;
 
-    const result = inject(type) || {};
-
-    updateBiodieselLayer(result.risk || riskLevel());
+    const result = inject(type);
 
     renderAll();
 
