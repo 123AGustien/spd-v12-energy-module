@@ -1,10 +1,8 @@
-name: SPD v12 Deploy (Static Safe Mode)
+name: SPD v12 Clean Deploy
 
 on:
   push:
     branches: ["main"]
-
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -19,16 +17,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare site folder
+      - name: Create clean build folder
         run: |
-          mkdir site
-          cp index.html site/
-          cp -r *.js site/ 2>/dev/null || true
+          mkdir build
+          cp index.html build/
+          cp engine.js build/ 2>/dev/null || true
+          cp ui.js build/ 2>/dev/null || true
+          cp graph-engine.js build/ 2>/dev/null || true
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: build
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
