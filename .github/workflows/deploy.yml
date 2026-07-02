@@ -1,34 +1,48 @@
-name: SPD v12 Clean Deploy
+name: SPD v12 Energy Module Deploy
 
 on:
   push:
     branches: ["main"]
+
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# 🔒 Prevent deployment conflicts (FIX YOU NEEDED)
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create clean build folder
-        run: |
-          mkdir build
-          cp index.html build/
-          cp engine.js build/ 2>/dev/null || true
-          cp ui.js build/ 2>/dev/null || true
-          cp graph-engine.js build/ 2>/dev/null || true
+      # 🧱 Ensure Pages is initialized safely
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
 
-      - name: Upload Pages artifact
+      # 📦 Build artifact (static site)
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: .
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
       - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
