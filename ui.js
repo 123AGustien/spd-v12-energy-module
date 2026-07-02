@@ -42,9 +42,9 @@ window.addEventListener("DOMContentLoaded", () => {
     if (el.INF) el.INF.innerText = state.INF;
 
     // BIODIESEL LAYER
-    if (el.blend) el.blend.innerText = biodieselState.blendRatio;
+    if (el.blend) el.blend.innerText = biodieselState.blendRatio.toFixed(1);
     if (el.cpo) el.cpo.innerText = biodieselState.cpoStock;
-    if (el.imp) el.imp.innerText = biodieselState.importDependency;
+    if (el.imp) el.imp.innerText = biodieselState.importDependency.toFixed(1);
     if (el.stab) el.stab.innerText = biodieselState.stability;
 
     renderPanels();
@@ -59,7 +59,7 @@ window.addEventListener("DOMContentLoaded", () => {
       description: "Awaiting input"
     };
 
-    const list = Array.isArray(solutions?.(risk))
+    const list = typeof solutions === "function"
       ? solutions(risk)
       : [];
 
@@ -67,7 +67,7 @@ window.addEventListener("DOMContentLoaded", () => {
       el.scenarioPanel.innerHTML =
         "<h3>SCENARIO PANEL</h3>" +
         scenario.name + "<br>" +
-        (scenario.description || scenario.impact || "No description");
+        (scenario.description || "No description available");
     }
 
     if (el.riskPanel) {
@@ -91,23 +91,21 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // GLOBAL SCENARIO TRIGGER
+  // GLOBAL TRIGGER
   window.trigger = function(type) {
 
     activeScenario = type;
 
-    const result = inject(type);
+    const result = inject(type) || {};
 
-    if (result?.risk) {
-      updateBiodieselLayer(result.risk);
-    }
+    // Always update biodiesel (engine v3 dependency fix)
+    updateBiodieselLayer(result.risk || riskLevel());
 
     renderAll();
 
     return result;
   };
 
-  // INITIAL RENDER (NO LOOP → FIXES GITHUB TIMEOUT)
+  // INITIAL RENDER
   renderAll();
-
 });
