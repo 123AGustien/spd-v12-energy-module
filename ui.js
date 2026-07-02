@@ -20,7 +20,8 @@ window.addEventListener("DOMContentLoaded", () => {
     CYB: document.getElementById("CYB"),
     INF: document.getElementById("INF"),
 
-    scenarioPanel: document.getElementById("scenarioPanel"),
+    scenarioList: document.getElementById("scenarioList"),
+
     riskPanel: document.getElementById("riskPanel"),
     solutionPanel: document.getElementById("solutionPanel"),
     actionPanel: document.getElementById("actionPanel"),
@@ -33,15 +34,18 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let activeScenario = "FX";
 
+  // -----------------------------
+  // CORE RENDER
+  // -----------------------------
   function renderAll() {
 
-    // CORE STATE
+    // SYSTEM STATE
     if (el.FX) el.FX.innerText = state.FX;
     if (el.DC) el.DC.innerText = state.DC;
     if (el.CYB) el.CYB.innerText = state.CYB;
     if (el.INF) el.INF.innerText = state.INF;
 
-    // BIODIESEL LAYER
+    // BIODIESEL
     if (el.blend) el.blend.innerText = biodieselState.blendRatio.toFixed(1);
     if (el.cpo) el.cpo.innerText = biodieselState.cpoStock;
     if (el.imp) el.imp.innerText = biodieselState.importDependency.toFixed(1);
@@ -50,6 +54,9 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPanels();
   }
 
+  // -----------------------------
+  // PANEL RENDER (NO UI DESTRUCTION)
+  // -----------------------------
   function renderPanels() {
 
     const risk = riskLevel();
@@ -63,24 +70,23 @@ window.addEventListener("DOMContentLoaded", () => {
       ? solutions(risk)
       : [];
 
-    if (el.scenarioPanel) {
-      el.scenarioPanel.innerHTML =
-        "<h3>SCENARIO PANEL</h3>" +
-        scenario.name + "<br>" +
-        (scenario.description || "No description available");
-    }
-
+    // RISK PANEL
     if (el.riskPanel) {
       el.riskPanel.innerHTML =
-        "<h3>RISK PANEL</h3>Risk: " + risk;
+        "<h3>RISK PANEL</h3>" +
+        "Risk: " + risk;
     }
 
+    // SOLUTION PANEL
     if (el.solutionPanel) {
       el.solutionPanel.innerHTML =
         "<h3>SOLUTION PANEL</h3>" +
-        (list.length ? list.map(x => "• " + x).join("<br>") : "No solutions");
+        (list.length
+          ? list.map(x => "• " + x).join("<br>")
+          : "No solutions");
     }
 
+    // ACTION PANEL
     if (el.actionPanel) {
       el.actionPanel.innerHTML =
         "<h3>ACTION SEQUENCE</h3>" +
@@ -89,16 +95,59 @@ window.addEventListener("DOMContentLoaded", () => {
         "3. Mitigate<br>" +
         "4. Stabilize";
     }
+
+    // SCENARIO INFO (NO BUTTONS HERE)
+    renderScenarioInfo();
   }
 
-  // GLOBAL TRIGGER
+  // -----------------------------
+  // SCENARIO INFO DISPLAY
+  // -----------------------------
+  function renderScenarioInfo() {
+    const scenario = scenarios?.[activeScenario];
+
+    if (!el.scenarioList) return;
+
+    const info = scenario
+      ? `<div style="margin-top:8px;">
+           <b>${scenario.name}</b><br>
+           <small>${scenario.description || "No description available"}</small>
+         </div>`
+      : `<div>No scenario selected</div>`;
+
+    el.scenarioList.innerHTML = info;
+  }
+
+  // -----------------------------
+  // SCENARIO BUTTON LIST
+  // -----------------------------
+  function renderScenarioButtons() {
+    if (!el.scenarioList) return;
+
+    const wrapper = document.createElement("div");
+
+    Object.keys(scenarios).forEach(key => {
+      const btn = document.createElement("button");
+      btn.className = "scenario-btn";
+      btn.innerText = scenarios[key].name || key;
+
+      btn.onclick = () => trigger(key);
+
+      wrapper.appendChild(btn);
+    });
+
+    el.scenarioList.appendChild(wrapper);
+  }
+
+  // -----------------------------
+  // GLOBAL ENGINE TRIGGER
+  // -----------------------------
   window.trigger = function(type) {
 
     activeScenario = type;
 
     const result = inject(type) || {};
 
-    // Always update biodiesel (engine v3 dependency fix)
     updateBiodieselLayer(result.risk || riskLevel());
 
     renderAll();
@@ -106,6 +155,10 @@ window.addEventListener("DOMContentLoaded", () => {
     return result;
   };
 
-  // INITIAL RENDER
+  // -----------------------------
+  // INIT
+  // -----------------------------
   renderAll();
+  renderScenarioButtons();
+
 });
