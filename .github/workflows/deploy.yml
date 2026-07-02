@@ -22,11 +22,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 🟢 Prepare clean deploy folder
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
       - name: Prepare site
         run: |
           mkdir -p dist
-          cp -r index.html engine.js graph-engine.js ui.js README.md dist/ || true
+          cp -r index.html engine.js graph-engine.js ui.js dist/
+
+      - name: Validate build
+        run: test -f dist/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -39,7 +44,6 @@ jobs:
 
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Deploy to GitHub Pages
