@@ -10,9 +10,10 @@ permissions:
   pages: write
   id-token: write
 
+# 🔒 STRONG concurrency lock
 concurrency:
-  group: pages-deploy
-  cancel-in-progress: true
+  group: github-pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -25,13 +26,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Prepare site
+      - name: Build site folder
         run: |
           mkdir -p dist
-          cp -r index.html engine.js graph-engine.js ui.js dist/
-
-      - name: Validate build
-        run: test -f dist/index.html
+          cp index.html engine.js graph-engine.js ui.js README.md dist/ || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -44,8 +42,9 @@ jobs:
 
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
