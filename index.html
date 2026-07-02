@@ -46,6 +46,21 @@ button {
 button:hover {
   background: #2a4b73;
 }
+
+/* NEW: Scenario buttons */
+.scenario-btn {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  background: #243a55;
+  border: 1px solid #355a80;
+  color: #cfe8ff;
+  cursor: pointer;
+}
+
+.scenario-btn:hover {
+  background: #355a80;
+}
 </style>
 </head>
 
@@ -78,10 +93,13 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
     <div>Stability: <span id="stab">NORMAL</span></div>
   </div>
 
-  <!-- SCENARIO PANEL -->
+  <!-- SCENARIO PANEL (UPDATED) -->
   <div class="panel" id="scenarioPanel">
     <h3>SCENARIO PANEL</h3>
-    Idle
+
+    <!-- THIS IS WHERE SCENARIOS WILL APPEAR -->
+    <div id="scenarioList">Loading scenarios...</div>
+
   </div>
 
   <!-- RISK PANEL -->
@@ -90,7 +108,7 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
     Risk: LOW
   </div>
 
-  <!-- SOLUTION PANEL (FIXED) -->
+  <!-- SOLUTION PANEL -->
   <div class="panel" id="solutionPanel">
     <h3>SOLUTION PANEL</h3>
     Awaiting scenario...
