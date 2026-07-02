@@ -61,6 +61,11 @@ button:hover {
 .scenario-btn:hover {
   background: #355a80;
 }
+
+/* DECISION PANEL STYLE */
+#decisionPanel b {
+  color: #ffffff;
+}
 </style>
 </head>
 
@@ -96,23 +101,18 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
   <!-- ECONOMIC BALANCE LAYER -->
   <div class="panel">
     <h3>ECONOMIC BALANCE LAYER</h3>
-
     <div>Supply: <span id="supply">100</span></div>
     <div>Demand: <span id="demand">100</span></div>
     <div>Govt Subsidy: <span id="subsidy">0</span></div>
     <div>Consumer Cost: <span id="cost">50</span></div>
   </div>
 
-  <!-- SCENARIO PANEL (FIXED STRUCTURE) -->
+  <!-- SCENARIO PANEL -->
   <div class="panel" id="scenarioPanel">
     <h3>SCENARIO PANEL</h3>
 
-    <!-- Buttons injected here -->
     <div id="scenarioButtons"></div>
-
-    <!-- Selected scenario info -->
     <div id="scenarioInfo"></div>
-
   </div>
 
   <!-- RISK PANEL -->
@@ -131,6 +131,12 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
   <div class="panel" id="actionPanel">
     <h3>ACTION SEQUENCE</h3>
     Awaiting input...
+  </div>
+
+  <!-- 🟦 NEW: DECISION PANEL -->
+  <div class="panel" id="decisionPanel">
+    <h3>DECISION PANEL</h3>
+    Awaiting system analysis...
   </div>
 
 </div>
