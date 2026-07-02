@@ -2,186 +2,123 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPD v12 // ENERGY MODULE (RUNNING)</title>
+<title>SPD v12 AUTONOMOUS COCKPIT // BIODIESEL INTEGRATION</title>
 
 <style>
-body{
-margin:0;
-background:#05070b;
-color:#cfe8ff;
-font-family:Arial;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at center, #070b12, #020409);
+  color: #cfe8ff;
 }
 
-.header{
-padding:12px;
-background:#0b1220;
-text-align:center;
-font-weight:bold;
+.header {
+  padding: 12px;
+  background: #0c1625;
+  text-align: center;
+  font-weight: bold;
 }
 
-#statusBar{
-text-align:center;
-padding:6px;
-background:#0a0f18;
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
 }
 
-.panel{
-display:flex;
-justify-content:space-around;
-padding:10px;
+.panel {
+  background: #0b1220;
+  padding: 12px;
+  border: 1px solid #1c2a3a;
+  border-radius: 8px;
 }
 
-.card{
-background:#0e1a2b;
-width:22%;
-padding:10px;
-border-radius:6px;
-text-align:center;
+button {
+  padding: 8px;
+  margin-top: 6px;
+  width: 100%;
+  background: #1c2f4a;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 
-.value{font-size:26px;}
-
-button{
-margin:4px;
-padding:8px;
-background:#1f3b5c;
-color:white;
-border:none;
-cursor:pointer;
-border-radius:4px;
+button:hover {
+  background: #2a4b73;
 }
 
-button:hover{background:#2b568a;}
-
-.module{
-margin:10px;
-padding:10px;
-background:#0a0f18;
-font-size:13px;
-border-radius:6px;
+.value {
+  font-weight: bold;
+  color: #7dd3fc;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">🛰 SPD v12 // ENERGY MODULE (LIVE RUN)</div>
-
-<div id="statusBar">STATUS: STABLE</div>
-
-<div class="panel">
-<div class="card">FX<div id="FX" class="value">0</div></div>
-<div class="card">DC<div id="DC" class="value">0</div></div>
-<div class="card">CYB<div id="CYB" class="value">0</div></div>
-<div class="card">INF<div id="INF" class="value">0</div></div>
+<div class="header">
+SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
 </div>
 
-<div class="module" id="scenarioPanel">SCENARIO: IDLE</div>
-<div class="module" id="riskPanel">RISK: LOW</div>
-<div class="module" id="solutionPanel">SOLUTION: NONE</div>
-<div class="module" id="actionPanel">ACTION: WAITING</div>
+<div class="container">
 
-<div style="text-align:center">
-<button onclick="inject('FX')">FX</button>
-<button onclick="inject('DC')">DC</button>
-<button onclick="inject('CYB')">CYB</button>
-<button onclick="inject('INF')">INF</button>
-<button onclick="resetAll()">RESET</button>
+  <!-- FX PANEL -->
+  <div class="panel">
+    <h3>FX / INF SYSTEM</h3>
+    <div>FX: <span id="fx">0</span></div>
+    <div>INF: <span id="inf">0</span></div>
+    <div>DC: <span id="dc">0</span></div>
+    <div>CYB: <span id="cyb">0</span></div>
+    <button onclick="inject('FX')">Inject FX</button>
+    <button onclick="inject('INF')">Inject INF</button>
+  </div>
+
+  <!-- BIODIESEL PANEL -->
+  <div class="panel">
+    <h3>BIODIESEL LAYER</h3>
+    <div>Blend Ratio: <span id="blend">35</span></div>
+    <div>CPO Stock: <span id="cpo">100</span></div>
+    <div>Import Dependency: <span id="imp">60</span></div>
+    <div>Stability: <span id="stab">NORMAL</span></div>
+  </div>
+
 </div>
 
-<script>
+<script type="module">
+import { state, inject } from "./engine.js";
+import { biodieselState, updateBiodieselLayer } from "./biodiesel-engine.js";
 
-/* STATE */
-const state = { FX:0, DC:0, CYB:0, INF:0 };
-let cascade = 0;
+/* -------------------------
+   MAIN UI LOOP
+--------------------------*/
+function render() {
 
-/* CASCADE LOGIC */
-function applyCascade(type){
+  document.getElementById("fx").innerText = state.FX;
+  document.getElementById("inf").innerText = state.INF;
+  document.getElementById("dc").innerText = state.DC;
+  document.getElementById("cyb").innerText = state.CYB;
 
-if(type==="FX"){ state.DC+=3; state.INF+=2; }
-if(type==="DC"){ state.INF+=3; state.CYB+=1; }
-if(type==="CYB"){ state.FX+=2; }
-if(type==="INF"){ state.FX+=3; state.DC+=1; }
-
-cascade++;
+  document.getElementById("blend").innerText = biodieselState.blendRatio.toFixed(1);
+  document.getElementById("cpo").innerText = biodieselState.cpoStock;
+  document.getElementById("imp").innerText = biodieselState.importDependency;
+  document.getElementById("stab").innerText = biodieselState.stability;
 }
 
-/* RISK */
-function risk(){
-const t =
-state.FX*1.2 +
-state.DC*1.1 +
-state.CYB*1.4 +
-state.INF*1.3;
+/* -------------------------
+   WRAP INJECT FUNCTION
+--------------------------*/
+window.inject = function(type) {
 
-if(t>120) return "CRITICAL";
-if(t>70) return "HIGH";
-if(t>35) return "MEDIUM";
-return "LOW";
-}
+  const result = inject(type);
 
-/* POLICY */
-function policy(r){
-if(r==="CRITICAL") return "FULL_OVERRIDE";
-if(r==="HIGH") return "CRISIS_MODE";
-if(r==="MEDIUM") return "ENERGY_SECURITY";
-return "COST_OPTIMISATION";
-}
+  // sync biodiesel layer
+  updateBiodieselLayer(result.risk);
 
-/* SOLUTION */
-function solution(r){
-if(r==="CRITICAL") return "SHUTDOWN + ISOLATE + SHED LOAD";
-if(r==="HIGH") return "ACTIVATE RESERVES";
-if(r==="MEDIUM") return "MONITOR SYSTEM";
-return "NORMAL OPS";
-}
+  render();
+};
 
-/* INJECT */
-function inject(type){
-
-state[type]+=10;
-applyCascade(type);
-
-const r = risk();
-
-document.getElementById("FX").innerText = state.FX;
-document.getElementById("DC").innerText = state.DC;
-document.getElementById("CYB").innerText = state.CYB;
-document.getElementById("INF").innerText = state.INF;
-
-document.getElementById("statusBar").innerText =
-"STATUS: " + r + " | POLICY: " + policy(r);
-
-document.getElementById("scenarioPanel").innerText =
-"SCENARIO: " + type + " STRESS";
-
-document.getElementById("riskPanel").innerText =
-"RISK: " + r;
-
-document.getElementById("solutionPanel").innerText =
-"SOLUTION: " + solution(r);
-
-document.getElementById("actionPanel").innerText =
-"ACTION: CASCADE=" + cascade;
-}
-
-/* RESET */
-function resetAll(){
-state.FX=0;state.DC=0;state.CYB=0;state.INF=0;
-cascade=0;
-
-document.getElementById("statusBar").innerText="STATUS: STABLE";
-document.getElementById("scenarioPanel").innerText="SCENARIO: IDLE";
-document.getElementById("riskPanel").innerText="RISK: LOW";
-document.getElementById("solutionPanel").innerText="SOLUTION: NONE";
-document.getElementById("actionPanel").innerText="ACTION: WAITING";
-
-document.getElementById("FX").innerText=0;
-document.getElementById("DC").innerText=0;
-document.getElementById("CYB").innerText=0;
-document.getElementById("INF").innerText=0;
-}
-
+/* initial render */
+render();
 </script>
 
 </body>
