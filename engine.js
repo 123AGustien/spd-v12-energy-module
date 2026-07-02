@@ -1,5 +1,3 @@
-/* SPD v12 ENERGY MODULE v2 // ENGINE CORE (FIXED + BIODIESEL LAYER v2) */
-
 export const state = {
   FX: 0,
   DC: 0,
@@ -10,17 +8,47 @@ export const state = {
   cpoReserve: 100
 };
 
-export let cascadeCount = 0;
+/* -----------------------------
+   INTERNAL STATE (SAFE COUNTER)
+------------------------------*/
+let cascadeCount = 0;
+
+export function getCascadeCount() {
+  return cascadeCount;
+}
 
 /* -----------------------------
-   SCENARIOS
+   SCENARIOS (UI READY MODEL)
 ------------------------------*/
 export const scenarios = {
-  FX: { name: "FX Volatility Spike", impact: "Triggers DC liquidity stress" },
-  DC: { name: "Data Centre Overload", impact: "Amplifies INF strain" },
-  CYB:{ name: "Cyber Disruption", impact: "Reduces FX stability" },
-  INF:{ name: "Infrastructure Stress", impact: "Feeds FX loop" }
+  FX: {
+    name: "FX Volatility Spike",
+    description: "Currency instability propagates into liquidity stress layers.",
+    impact: "Triggers DC liquidity stress"
+  },
+  DC: {
+    name: "Data Centre Overload",
+    description: "Compute infrastructure saturation under load pressure.",
+    impact: "Amplifies INF strain"
+  },
+  CYB: {
+    name: "Cyber Disruption",
+    description: "Security degradation reduces FX stability and trust layers.",
+    impact: "Reduces FX stability"
+  },
+  INF: {
+    name: "Infrastructure Stress",
+    description: "Physical infrastructure degradation feeds FX volatility loop.",
+    impact: "Feeds FX loop"
+  }
 };
+
+/* -----------------------------
+   UTILS
+------------------------------*/
+function clamp(n, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, n));
+}
 
 /* -----------------------------
    ENERGY MODEL
@@ -30,17 +58,17 @@ export function energyIndex() {
 }
 
 /* -----------------------------
-   BIODIESEL ENGINE
+   BIODIESEL ENGINE (STABLE VERSION)
 ------------------------------*/
 export function updateBiodieselLevel(risk) {
 
   const pressure = (state.FX * 0.2 + state.INF * 0.3);
 
-  switch(risk) {
+  switch (risk) {
 
     case "LOW":
       state.biodiesel = 35;
-      state.cpoReserve = Math.min(100, state.cpoReserve + 1);
+      state.cpoReserve = clamp(state.cpoReserve + 1);
       break;
 
     case "MEDIUM":
@@ -49,24 +77,25 @@ export function updateBiodieselLevel(risk) {
 
     case "HIGH":
       state.biodiesel = 50 + Math.min(3, pressure);
-      state.cpoReserve = Math.max(0, state.cpoReserve - 2);
+      state.cpoReserve = clamp(state.cpoReserve - 2);
       break;
 
     case "CRITICAL":
       state.biodiesel = 55 + Math.min(5, pressure);
-      state.cpoReserve = Math.max(0, state.cpoReserve - 5);
+      state.cpoReserve = clamp(state.cpoReserve - 5);
       break;
   }
 
-  state.biodiesel = Math.min(65, Math.max(35, state.biodiesel));
+  state.biodiesel = clamp(state.biodiesel, 35, 65);
 }
 
 /* -----------------------------
-   CASCADE ENGINE
+   CASCADE ENGINE (CONTROLLED FLOW)
 ------------------------------*/
 export function applyCascade(type) {
 
-  switch(type){
+  switch (type) {
+
     case "FX":
       state.DC += 3;
       state.INF += 2;
@@ -113,7 +142,7 @@ export function riskLevel() {
    POLICY ENGINE
 ------------------------------*/
 export function policyState(risk) {
-  switch(risk){
+  switch (risk) {
     case "CRITICAL": return "FULL_OVERRIDE";
     case "HIGH": return "CRISIS_MODE";
     case "MEDIUM": return "ENERGY_SECURITY";
@@ -126,32 +155,33 @@ export function policyState(risk) {
 ------------------------------*/
 export function solutions(level) {
 
-  if(level === "CRITICAL") return [
+  if (level === "CRITICAL") return [
     "Emergency shutdown buffers",
     "Auto load shedding",
     "System isolation"
   ];
 
-  if(level === "HIGH") return [
+  if (level === "HIGH") return [
     "Activate reserves",
     "Reduce dependency",
     "Stabilise system"
   ];
 
-  if(level === "MEDIUM") return [
+  if (level === "MEDIUM") return [
     "Monitor volatility",
-    "Minor balancing"
+    "Minor balancing actions"
   ];
 
   return ["Normal operations"];
 }
 
 /* -----------------------------
-   MAIN ACTION
+   MAIN ACTION ENGINE
 ------------------------------*/
 export function inject(type) {
 
   state[type] += 10;
+
   applyCascade(type);
 
   const risk = riskLevel();
@@ -163,15 +193,16 @@ export function inject(type) {
     risk,
     policy: policyState(risk),
     energy: energyIndex(),
-    cascadeCount,
+    cascadeCount: getCascadeCount(),
     scenario: scenarios[type]
   };
 }
 
 /* -----------------------------
-   RESET
+   RESET ENGINE (SAFE)
 ------------------------------*/
 export function reset() {
+
   state.FX = 0;
   state.DC = 0;
   state.CYB = 0;
