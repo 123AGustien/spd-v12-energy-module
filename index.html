@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPD v12 // ENERGY MODULE v2 (CASCADE)</title>
+<title>SPD v12 // ENERGY MODULE (RUNNING)</title>
 
 <style>
 body{
@@ -60,27 +60,14 @@ background:#0a0f18;
 font-size:13px;
 border-radius:6px;
 }
-
-#log{
-position:absolute;
-right:10px;
-top:140px;
-width:320px;
-height:340px;
-overflow:auto;
-background:#0a0f18;
-padding:10px;
-font-size:11px;
-border-left:2px solid #1f3b5c;
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">🛰 SPD v12 // ENERGY MODULE v2 (CASCADE SYSTEM)</div>
+<div class="header">🛰 SPD v12 // ENERGY MODULE (LIVE RUN)</div>
 
-<div id="statusBar">STATUS: INITIALISING</div>
+<div id="statusBar">STATUS: STABLE</div>
 
 <div class="panel">
 <div class="card">FX<div id="FX" class="value">0</div></div>
@@ -89,203 +76,111 @@ border-left:2px solid #1f3b5c;
 <div class="card">INF<div id="INF" class="value">0</div></div>
 </div>
 
-<div class="panel">
-<div class="card">ENERGY INDEX<div id="EN" class="value">0</div></div>
-<div class="card">POLICY STATE<div id="PS" class="value">STABLE</div></div>
-<div class="card">RISK<div id="RK" class="value">LOW</div></div>
-<div class="card">CASCADES<div id="CS" class="value">0</div></div>
-</div>
-
-<div class="module" id="scenarioPanel">
-<b>SCENARIO PANEL</b><br>Idle
-</div>
-
-<div class="module" id="riskPanel">
-<b>RISK PANEL</b><br>Risk: LOW
-</div>
-
-<div class="module" id="solutionPanel">
-<b>SOLUTION OPTIONS</b><br>- None
-</div>
-
-<div class="module" id="actionPanel">
-<b>ACTION SEQUENCE PROMPT</b><br>- Awaiting input
-</div>
+<div class="module" id="scenarioPanel">SCENARIO: IDLE</div>
+<div class="module" id="riskPanel">RISK: LOW</div>
+<div class="module" id="solutionPanel">SOLUTION: NONE</div>
+<div class="module" id="actionPanel">ACTION: WAITING</div>
 
 <div style="text-align:center">
-<button onclick="inject('FX')">FX STRESS</button>
-<button onclick="inject('DC')">DC LOAD</button>
-<button onclick="inject('CYB')">CYBER EVENT</button>
-<button onclick="inject('INF')">INFRA STRAIN</button>
+<button onclick="inject('FX')">FX</button>
+<button onclick="inject('DC')">DC</button>
+<button onclick="inject('CYB')">CYB</button>
+<button onclick="inject('INF')">INF</button>
 <button onclick="resetAll()">RESET</button>
 </div>
-
-<div id="log"></div>
 
 <script>
 
 /* STATE */
-const state = {FX:0, DC:0, CYB:0, INF:0};
-let log = [];
-let cascadeCount = 0;
+const state = { FX:0, DC:0, CYB:0, INF:0 };
+let cascade = 0;
 
-/* SCENARIOS */
-const scenarios = {
-FX:{name:"FX Volatility Spike",impact:"Triggers DC liquidity stress"},
-DC:{name:"Data Centre Overload",impact:"Amplifies INF strain"},
-CYB:{name:"Cyber Disruption",impact:"Reduces systemic trust"},
-INF:{name:"Infrastructure Stress",impact:"Feeds FX instability loop"}
-};
-
-/* LOG */
-function addLog(m){
-log.push(m);
-document.getElementById("log").innerHTML =
-log.slice(-12).map(x=>"→ "+x).join("<br>");
-}
-
-/* ENERGY MODEL (NEW) */
-function energyIndex(){
-let oilShock = state.FX * 0.6;
-let cpoStress = state.INF * 0.4;
-return oilShock + cpoStress;
-}
-
-/* CASCADE ENGINE (NEW NON-LINEAR LOGIC) */
+/* CASCADE LOGIC */
 function applyCascade(type){
 
-if(type === "FX"){
-state.DC += 3;
-state.INF += 2;
+if(type==="FX"){ state.DC+=3; state.INF+=2; }
+if(type==="DC"){ state.INF+=3; state.CYB+=1; }
+if(type==="CYB"){ state.FX+=2; }
+if(type==="INF"){ state.FX+=3; state.DC+=1; }
+
+cascade++;
 }
 
-if(type === "DC"){
-state.INF += 3;
-state.CYB += 1;
-}
-
-if(type === "CYB"){
-state.FX += 2;
-state.INF += 1;
-}
-
-if(type === "INF"){
-state.FX += 3;
-state.DC += 1;
-}
-cascadeCount++;
-}
-
-/* RISK ENGINE (UPGRADED) */
-function riskLevel(){
-
-let total =
+/* RISK */
+function risk(){
+const t =
 state.FX*1.2 +
 state.DC*1.1 +
 state.CYB*1.4 +
-state.INF*1.3 +
-energyIndex()*0.8;
+state.INF*1.3;
 
-if(total > 120) return "CRITICAL";
-if(total > 70) return "HIGH";
-if(total > 35) return "MEDIUM";
+if(t>120) return "CRITICAL";
+if(t>70) return "HIGH";
+if(t>35) return "MEDIUM";
 return "LOW";
 }
 
-/* POLICY ENGINE (NEW) */
-function policyState(risk){
-if(risk === "CRITICAL") return "FULL_OVERRIDE";
-if(risk === "HIGH") return "CRISIS_MODE";
-if(risk === "MEDIUM") return "ENERGY_SECURITY";
+/* POLICY */
+function policy(r){
+if(r==="CRITICAL") return "FULL_OVERRIDE";
+if(r==="HIGH") return "CRISIS_MODE";
+if(r==="MEDIUM") return "ENERGY_SECURITY";
 return "COST_OPTIMISATION";
 }
 
-/* SOLUTIONS */
-function solutions(level){
-if(level==="CRITICAL"){
-return ["Emergency shutdown buffers","Auto load shedding","System isolation"];
-}
-if(level==="HIGH"){
-return ["Activate reserves","Reduce external dependency"];
-}
-if(level==="MEDIUM"){
-return ["Stabilisation active","Monitor volatility"];
-}
-return ["Normal operations"];
+/* SOLUTION */
+function solution(r){
+if(r==="CRITICAL") return "SHUTDOWN + ISOLATE + SHED LOAD";
+if(r==="HIGH") return "ACTIVATE RESERVES";
+if(r==="MEDIUM") return "MONITOR SYSTEM";
+return "NORMAL OPS";
 }
 
-/* ACTION */
+/* INJECT */
 function inject(type){
 
-state[type] += 10;
-
-/* cascade propagation */
+state[type]+=10;
 applyCascade(type);
 
-let risk = riskLevel();
-let policy = policyState(risk);
-let energy = energyIndex();
+const r = risk();
 
-document.getElementById("scenarioPanel").innerHTML =
-"<b>SCENARIO PANEL</b><br>" +
-scenarios[type].name + "<br>" +
-scenarios[type].impact;
-
-document.getElementById("riskPanel").innerHTML =
-"<b>RISK PANEL</b><br>" +
-"Risk: " + risk;
-
-document.getElementById("solutionPanel").innerHTML =
-"<b>SOLUTION OPTIONS</b><br>" +
-solutions(risk).map(x=>"• "+x).join("<br>");
-
-document.getElementById("actionPanel").innerHTML =
-"<b>ACTION SEQUENCE</b><br>" +
-"Step 1: Detect " + type + "<br>" +
-"Step 2: Cascade propagation active<br>" +
-"Step 3: Apply mitigation → " + scenarios[type].impact;
-
-addLog("INJECT " + type + " | CASCADE=" + cascadeCount);
-
-updateUI(risk, policy, energy);
-}
-
-/* UI UPDATE */
-function updateUI(risk, policy, energy){
+document.getElementById("FX").innerText = state.FX;
+document.getElementById("DC").innerText = state.DC;
+document.getElementById("CYB").innerText = state.CYB;
+document.getElementById("INF").innerText = state.INF;
 
 document.getElementById("statusBar").innerText =
-"STATUS: " + risk + " | POLICY: " + policy;
+"STATUS: " + r + " | POLICY: " + policy(r);
 
-document.getElementById("EN").innerText =
-energy.toFixed(1);
+document.getElementById("scenarioPanel").innerText =
+"SCENARIO: " + type + " STRESS";
 
-document.getElementById("PS").innerText =
-policy;
+document.getElementById("riskPanel").innerText =
+"RISK: " + r;
 
-document.getElementById("RK").innerText =
-risk;
+document.getElementById("solutionPanel").innerText =
+"SOLUTION: " + solution(r);
 
-document.getElementById("CS").innerText =
-cascadeCount;
-
-/* render metrics */
-FX.innerText = state.FX;
-DC.innerText = state.DC;
-CYB.innerText = state.CYB;
-INF.innerText = state.INF;
+document.getElementById("actionPanel").innerText =
+"ACTION: CASCADE=" + cascade;
 }
 
 /* RESET */
 function resetAll(){
 state.FX=0;state.DC=0;state.CYB=0;state.INF=0;
-cascadeCount=0;
-log=[];
-addLog("SYSTEM RESET");
-updateUI("LOW","STABLE",0);
-}
+cascade=0;
 
-/* INIT */
-updateUI("LOW","STABLE",0);
+document.getElementById("statusBar").innerText="STATUS: STABLE";
+document.getElementById("scenarioPanel").innerText="SCENARIO: IDLE";
+document.getElementById("riskPanel").innerText="RISK: LOW";
+document.getElementById("solutionPanel").innerText="SOLUTION: NONE";
+document.getElementById("actionPanel").innerText="ACTION: WAITING";
+
+document.getElementById("FX").innerText=0;
+document.getElementById("DC").innerText=0;
+document.getElementById("CYB").innerText=0;
+document.getElementById("INF").innerText=0;
+}
 
 </script>
 
