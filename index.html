@@ -47,7 +47,6 @@ button:hover {
   background: #2a4b73;
 }
 
-/* Scenario buttons */
 .scenario-btn {
   width: 100%;
   padding: 8px;
@@ -61,11 +60,6 @@ button:hover {
 .scenario-btn:hover {
   background: #355a80;
 }
-
-/* DECISION PANEL STYLE */
-#decisionPanel b {
-  color: #ffffff;
-}
 </style>
 </head>
 
@@ -77,9 +71,10 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
 
 <div class="container">
 
-  <!-- FX PANEL -->
+  <!-- FX / INF SYSTEM -->
   <div class="panel">
     <h3>FX / INF SYSTEM</h3>
+
     <div>FX: <span id="FX">0</span></div>
     <div>INF: <span id="INF">0</span></div>
     <div>DC: <span id="DC">0</span></div>
@@ -89,18 +84,23 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
     <button onclick="trigger('INF')">Inject INF</button>
   </div>
 
-  <!-- BIODIESEL PANEL -->
+  <!-- BIODIESEL LAYER -->
   <div class="panel">
     <h3>BIODIESEL LAYER</h3>
+
     <div>Blend Ratio: <span id="blend">35</span></div>
     <div>CPO Stock: <span id="cpo">100</span></div>
     <div>Import Dependency: <span id="imp">60</span></div>
     <div>Stability: <span id="stab">NORMAL</span></div>
+
+    <!-- BIO CONTROL BUTTONS -->
+    <div id="bioButtons"></div>
   </div>
 
   <!-- ECONOMIC BALANCE LAYER -->
   <div class="panel">
     <h3>ECONOMIC BALANCE LAYER</h3>
+
     <div>Supply: <span id="supply">100</span></div>
     <div>Demand: <span id="demand">100</span></div>
     <div>Govt Subsidy: <span id="subsidy">0</span></div>
@@ -133,7 +133,7 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
     Awaiting input...
   </div>
 
-  <!-- 🟦 NEW: DECISION PANEL -->
+  <!-- DECISION PANEL -->
   <div class="panel" id="decisionPanel">
     <h3>DECISION PANEL</h3>
     Awaiting system analysis...
@@ -141,7 +141,6 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
 
 </div>
 
-<!-- UI CONTROLLER -->
 <script type="module" src="./ui.js"></script>
 
 </body>
