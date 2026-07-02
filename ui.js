@@ -30,10 +30,13 @@ window.addEventListener("DOMContentLoaded", () => {
     blend: document.getElementById("blend"),
     cpo: document.getElementById("cpo"),
     imp: document.getElementById("imp"),
-    stab: document.getElementById("stab")
+    stab: document.getElementById("stab"),
+
+    bioButtons: document.getElementById("bioButtons")
   };
 
   let activeScenario = "FX";
+  let bioMode = "NORMAL";
 
   // -----------------------------
   // CORE RENDER
@@ -50,7 +53,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (el.blend) el.blend.innerText = state.biodiesel.toFixed(1);
     if (el.cpo) el.cpo.innerText = state.cpoReserve;
     if (el.imp) el.imp.innerText = "—";
-    if (el.stab) el.stab.innerText = "SYSTEM MODE";
+    if (el.stab) el.stab.innerText = bioMode;
 
     renderPanels();
   }
@@ -61,6 +64,7 @@ window.addEventListener("DOMContentLoaded", () => {
   function renderPanels() {
 
     const risk = riskLevel();
+
     const scenario = scenarios?.[activeScenario] || {
       name: "NO SCENARIO",
       description: "Awaiting input",
@@ -134,7 +138,59 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // -----------------------------
-  // DECISION ENGINE (NEW)
+  // BIODIESEL MODE BUTTONS
+  // -----------------------------
+  function renderBioButtons() {
+
+    if (!el.bioButtons) return;
+
+    el.bioButtons.innerHTML = "";
+
+    const modes = [
+      { key: "NORMAL", label: "Normal Mode" },
+      { key: "SHORT", label: "Biodiesel Short Supply" },
+      { key: "OIL_LOW", label: "Oil Prices Low" }
+    ];
+
+    modes.forEach(m => {
+
+      const btn = document.createElement("button");
+      btn.className = "scenario-btn";
+      btn.innerText = m.label;
+
+      btn.onclick = () => setBioMode(m.key);
+
+      el.bioButtons.appendChild(btn);
+    });
+  }
+
+  // -----------------------------
+  // BIODIESEL MODE ENGINE
+  // -----------------------------
+  function setBioMode(mode) {
+
+    bioMode = mode;
+
+    if (mode === "NORMAL") {
+      state.biodiesel = 35;
+      state.cpoReserve = 100;
+    }
+
+    if (mode === "SHORT") {
+      state.biodiesel = 55;
+      state.cpoReserve = 40;
+    }
+
+    if (mode === "OIL_LOW") {
+      state.biodiesel = 25;
+      state.cpoReserve = 120;
+    }
+
+    renderAll();
+  }
+
+  // -----------------------------
+  // DECISION ENGINE
   // -----------------------------
   function renderDecisionPanel(risk, scenario) {
 
@@ -203,6 +259,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // INIT
   // -----------------------------
   renderScenarioButtons();
+  renderBioButtons();
   renderAll();
 
 });
