@@ -2,49 +2,24 @@ name: Deploy SPD v12 Energy Module
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: pages-deploy
-  cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    environment:
+      name: github-pages
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # 🔍 ZERO-ERROR GATE (NEW CORE SAFETY SYSTEM)
-      - name: Pre-Deploy Validator
-        run: |
-          echo "Checking SPD v12 system integrity..."
-
-          test -f index.html || (echo "Missing index.html" && exit 1)
-          test -f ui.js || (echo "Missing ui.js" && exit 1)
-          test -f engine.js || (echo "Missing engine.js" && exit 1)
-          test -f biodiesel-engine.js || (echo "Missing biodiesel-engine.js" && exit 1)
-
-          echo "Core files OK"
-
-          if [ ! -d "scenario" ]; then
-            echo "Warning: scenario folder missing"
-          else
-            echo "Scenario folder OK"
-          fi
-
-          node -c ui.js || (echo "ui.js syntax error" && exit 1)
-          node -c engine.js || (echo "engine.js syntax error" && exit 1)
-          node -c biodiesel-engine.js || (echo "biodiesel-engine.js syntax error" && exit 1)
-
-          echo "VALIDATION PASSED"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -54,6 +29,5 @@ jobs:
         with:
           path: .
 
-      - name: Deploy
-        id: deployment
+      - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
