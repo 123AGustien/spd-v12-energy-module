@@ -1,11 +1,14 @@
-
-/* SPD v12 ENERGY MODULE v2 // ENGINE CORE (FIXED) */
+ /* SPD v12 ENERGY MODULE v2 // ENGINE CORE (FIXED + BIODIESEL LAYER) */
 
 export const state = {
 FX: 0,
 DC: 0,
 CYB: 0,
-INF: 0
+INF: 0,
+
+// 🟡 BIODIESEL LAYER
+biodiesel: 35,
+cpoReserve: 100
 };
 
 export let cascadeCount = 0;
@@ -25,6 +28,34 @@ INF:{ name: "Infrastructure Stress", impact: "Feeds FX loop" }
 ------------------------------*/
 export function energyIndex() {
 return state.FX * 0.6 + state.INF * 0.4;
+}
+
+/* -----------------------------
+   BIODIESEL ENGINE (NEW LAYER)
+------------------------------*/
+export function updateBiodieselLevel(risk) {
+
+switch(risk){
+
+case "LOW":
+state.biodiesel = 35;
+state.cpoReserve += 1;
+break;
+
+case "MEDIUM":
+state.biodiesel = 40;
+break;
+
+case "HIGH":
+state.biodiesel = 50;
+state.cpoReserve -= 2;
+break;
+
+case "CRITICAL":
+state.biodiesel = 60;
+state.cpoReserve -= 5;
+break;
+}
 }
 
 /* -----------------------------
@@ -115,7 +146,7 @@ return ["Normal operations"];
 }
 
 /* -----------------------------
-   MAIN ACTION (FIXED)
+   MAIN ACTION (FIXED + BIO HOOK)
 ------------------------------*/
 export function inject(type) {
 
@@ -123,6 +154,9 @@ state[type] += 10;
 applyCascade(type);
 
 const risk = riskLevel();
+
+// 🟡 NEW: update energy mix
+updateBiodieselLevel(risk);
 
 return {
 state: { ...state },
@@ -142,5 +176,10 @@ state.FX = 0;
 state.DC = 0;
 state.CYB = 0;
 state.INF = 0;
+
+// reset biodiesel layer
+state.biodiesel = 35;
+state.cpoReserve = 100;
+
 cascadeCount = 0;
 }
