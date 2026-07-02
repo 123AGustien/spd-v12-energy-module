@@ -10,7 +10,6 @@ permissions:
   pages: write
   id-token: write
 
-# 🔒 prevents overlapping deploys + cancels old runs safely
 concurrency:
   group: pages-deploy
   cancel-in-progress: true
@@ -23,16 +22,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 🧠 FAST CLEAN (prevents hidden junk slowing upload)
       - name: Clean workspace
-        run: rm -rf dist build || true
+        run: |
+          rm -rf node_modules || true
+          rm -rf dist build || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # ⚡ CRITICAL FIX: ONLY DEPLOY REQUIRED FILES
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: |
+            index.html
+            ui.js
+            engine.js
+            biodiesel-engine.js
+            scenario/
 
       - name: Deploy
         id: deployment
