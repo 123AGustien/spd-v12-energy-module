@@ -1,4 +1,5 @@
-/* SPD v12 ENERGY MODULE v2 // ENGINE CORE */
+
+/* SPD v12 ENERGY MODULE v2 // ENGINE CORE (FIXED) */
 
 export const state = {
 FX: 0,
@@ -10,70 +11,59 @@ INF: 0
 export let cascadeCount = 0;
 
 /* -----------------------------
-   SCENARIO DEFINITIONS
+   SCENARIOS
 ------------------------------*/
 export const scenarios = {
-FX: {
-name: "FX Volatility Spike",
-impact: "Triggers DC liquidity stress"
-},
-DC: {
-name: "Data Centre Overload",
-impact: "Amplifies INF strain"
-},
-CYB: {
-name: "Cyber Disruption",
-impact: "Reduces systemic trust and FX stability"
-},
-INF: {
-name: "Infrastructure Stress",
-impact: "Feeds FX instability loop"
-}
+FX: { name: "FX Volatility Spike", impact: "Triggers DC liquidity stress" },
+DC: { name: "Data Centre Overload", impact: "Amplifies INF strain" },
+CYB:{ name: "Cyber Disruption", impact: "Reduces FX stability" },
+INF:{ name: "Infrastructure Stress", impact: "Feeds FX loop" }
 };
 
 /* -----------------------------
-   ENERGY MODEL (FX + INF coupling)
+   ENERGY MODEL
 ------------------------------*/
 export function energyIndex() {
-let oilShock = state.FX * 0.6;
-let cpoStress = state.INF * 0.4;
-return oilShock + cpoStress;
+return state.FX * 0.6 + state.INF * 0.4;
 }
 
 /* -----------------------------
-   CASCADE ENGINE (NON-LINEAR SYSTEM)
+   CASCADE ENGINE
 ------------------------------*/
 export function applyCascade(type) {
 
-if (type === "FX") {
+switch(type){
+
+case "FX":
 state.DC += 3;
 state.INF += 2;
-}
+break;
 
-if (type === "DC") {
+case "DC":
 state.INF += 3;
 state.CYB += 1;
-}
+break;
 
-if (type === "CYB") {
+case "CYB":
 state.FX += 2;
 state.INF += 1;
-}
+break;
 
-if (type === "INF") {
+case "INF":
 state.FX += 3;
 state.DC += 1;
+break;
 }
 
 cascadeCount++;
 }
 
 /* -----------------------------
-   RISK ENGINE (SYSTEMIC SCORING)
+   RISK ENGINE
 ------------------------------*/
 export function riskLevel() {
 
-let total =
+const total =
 state.FX * 1.2 +
 state.DC * 1.1 +
 state.CYB * 1.4 +
@@ -87,14 +77,16 @@ return "LOW";
 }
 
 /* -----------------------------
-   POLICY ENGINE (DECISION STATES)
+   POLICY ENGINE
 ------------------------------*/
 export function policyState(risk) {
 
-if (risk === "CRITICAL") return "FULL_OVERRIDE";
-if (risk === "HIGH") return "CRISIS_MODE";
-if (risk === "MEDIUM") return "ENERGY_SECURITY";
-return "COST_OPTIMISATION";
+switch(risk){
+case "CRITICAL": return "FULL_OVERRIDE";
+case "HIGH": return "CRISIS_MODE";
+case "MEDIUM": return "ENERGY_SECURITY";
+default: return "COST_OPTIMISATION";
+}
 }
 
 /* -----------------------------
@@ -102,50 +94,48 @@ return "COST_OPTIMISATION";
 ------------------------------*/
 export function solutions(level) {
 
-if (level === "CRITICAL") {
-return [
+if(level === "CRITICAL") return [
 "Emergency shutdown buffers",
-"Auto load shedding activated",
-"System isolation engaged"
+"Auto load shedding",
+"System isolation"
 ];
-}
 
-if (level === "HIGH") {
-return [
-"Activate strategic reserves",
-"Reduce external dependency",
-"Stabilisation protocols engaged"
+if(level === "HIGH") return [
+"Activate reserves",
+"Reduce dependency",
+"Stabilise system"
 ];
-}
 
-if (level === "MEDIUM") {
-return [
-"Monitoring intensified",
-"Minor balancing active"
+if(level === "MEDIUM") return [
+"Monitor volatility",
+"Minor balancing"
 ];
-}
 
-return ["Normal operations maintained"];
+return ["Normal operations"];
 }
 
 /* -----------------------------
-   ACTION: inject stress event
+   MAIN ACTION (FIXED)
 ------------------------------*/
-export function inject(stateRef, type) {
+export function inject(type) {
 
-stateRef[type] += 10;
+state[type] += 10;
 applyCascade(type);
 
+const risk = riskLevel();
+
 return {
-risk: riskLevel(),
-policy: policyState(riskLevel()),
+state: { ...state },
+risk,
+policy: policyState(risk),
 energy: energyIndex(),
-cascadeCount
+cascadeCount,
+scenario: scenarios[type]
 };
 }
 
 /* -----------------------------
-   RESET ENGINE
+   RESET
 ------------------------------*/
 export function reset() {
 state.FX = 0;
