@@ -1,43 +1,33 @@
-name: SPD v12 Energy Module CI
+name: SPD v12 Energy Module Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  validate:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate HTML exists
+      - name: Validate project files
         run: |
-          if [ ! -f index.html ]; then
-            echo "ERROR: index.html missing"
-            exit 1
-          fi
-
-      - name: Validate JS engine
-        run: |
-          for file in engine.js graph-engine.js ui.js; do
-            if [ ! -f "$file" ]; then
-              echo "WARNING: $file missing"
-            else
-              echo "$file OK"
-            fi
-          done
+          echo "Checking SPD v12 cockpit..."
+          test -f index.html || (echo "Missing index.html" && exit 1)
+          echo "OK: index.html found"
 
   deploy:
-    needs: validate
+    needs: build
     runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
 
     environment:
       name: github-pages
@@ -49,6 +39,8 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
