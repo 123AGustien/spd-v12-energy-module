@@ -1,23 +1,43 @@
-export function applyScenario(state, scenario) {
-  const updated = { ...state };
+import { scenarios } from "./scenarios.js";
 
-  updated.FX += scenario.effects.FX || 0;
-  updated.INF += scenario.effects.INF || 0;
-  updated.DC += scenario.effects.DC || 0;
-  updated.CYB += scenario.effects.CYB || 0;
+export const state = {
+  FX: 0,
+  INF: 0,
+  DC: 0,
+  CYB: 0
+};
 
-  updated.biodiesel = Math.max(
-    0,
-    (updated.biodiesel || 0) + (scenario.energyImpact.biodiesel || 0)
-  );
+export let cascadeCount = 0;
 
-  updated.importDependency =
-    (updated.importDependency || 0) +
-    (scenario.energyImpact.importDependency || 0);
+export function inject(type) {
+  const scenario = scenarios[type];
+  if (!scenario) return null;
 
-  updated.cpoReserve =
-    (updated.cpoReserve || 0) +
-    (scenario.energyImpact.cpoReserve || 0);
+  // Apply effects
+  Object.keys(scenario.effects).forEach(key => {
+    state[key] += scenario.effects[key];
+  });
 
-  return updated;
+  cascadeCount++;
+
+  return {
+    scenario,
+    risk: calculateRisk()
+  };
+}
+
+export function riskLevel() {
+  return calculateRisk();
+}
+
+function calculateRisk() {
+  const total =
+    state.FX +
+    state.INF +
+    state.DC +
+    state.CYB;
+
+  if (total > 120) return "HIGH";
+  if (total > 60) return "MEDIUM";
+  return "LOW";
 }
