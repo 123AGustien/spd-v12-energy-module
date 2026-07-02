@@ -72,16 +72,22 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
   <!-- BIODIESEL PANEL -->
   <div class="panel">
     <h3>BIODIESEL LAYER</h3>
+
     <div>Blend Ratio: <span id="blend">35</span></div>
     <div>CPO Stock: <span id="cpo">100</span></div>
     <div>Import Dependency: <span id="imp">60</span></div>
     <div>Stability: <span id="stab">NORMAL</span></div>
+
+    <!-- 🔥 CONTROL BUTTONS -->
+    <button onclick="trigger('OIL_HIGH')">Oil Price HIGH</button>
+    <button onclick="trigger('OIL_LOW')">Oil Price LOW</button>
+    <button onclick="trigger('BIODIESEL_SHORT')">Biodiesel Shortage</button>
   </div>
 
   <!-- SCENARIO PANEL -->
   <div class="panel" id="scenarioPanel">
     <h3>SCENARIO PANEL</h3>
-    Idle
+    <div id="scenarioInfo">Idle</div>
   </div>
 
   <!-- RISK PANEL -->
@@ -90,7 +96,7 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
     Risk: LOW
   </div>
 
-  <!-- SOLUTION PANEL (FIXED) -->
+  <!-- SOLUTION PANEL -->
   <div class="panel" id="solutionPanel">
     <h3>SOLUTION PANEL</h3>
     Awaiting scenario...
@@ -100,6 +106,12 @@ SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
   <div class="panel" id="actionPanel">
     <h3>ACTION SEQUENCE</h3>
     Awaiting input...
+  </div>
+
+  <!-- 🧠 DECISION PANEL -->
+  <div class="panel" id="decisionPanel">
+    <h3>DECISION PANEL</h3>
+    Awaiting analysis...
   </div>
 
 </div>
