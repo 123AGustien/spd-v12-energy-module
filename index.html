@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SPD v12 // ENERGY MODULE COCKPIT</title>
+
+<style>
+body{
+margin:0;
+background:#05070b;
+color:#cfe8ff;
+font-family:Arial;
+}
+
+.header{
+padding:12px;
+background:#0b1220;
+text-align:center;
+font-weight:bold;
+}
+
+#statusBar{
+text-align:center;
+padding:6px;
+background:#0a0f18;
+}
+
+.panel{
+display:flex;
+justify-content:space-around;
+padding:10px;
+}
+
+.card{
+background:#0e1a2b;
+width:22%;
+padding:10px;
+border-radius:6px;
+text-align:center;
+}
+
+.value{font-size:26px;}
+
+button{
+margin:4px;
+padding:10px;
+background:#1f3b5c;
+color:white;
+border:none;
+cursor:pointer;
+border-radius:4px;
+}
+
+button:hover{
+background:#2b568a;
+}
+
+.section{
+margin:10px;
+padding:10px;
+background:#0a0f18;
+font-size:13px;
+border-left:2px solid #1f3b5c;
+}
+
+#log{
+position:absolute;
+right:10px;
+top:120px;
+width:320px;
+height:360px;
+overflow:auto;
+background:#0a0f18;
+padding:10px;
+font-size:11px;
+border-left:2px solid #1f3b5c;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">🛰 SPD v12 // ENERGY MODULE COCKPIT</div>
+
+<div id="statusBar">STATUS: STABLE</div>
+
+<div class="panel">
+<div class="card">FX<div id="FX" class="value">0</div></div>
+<div class="card">DC<div id="DC" class="value">0</div></div>
+<div class="card">CYB<div id="CYB" class="value">0</div></div>
+<div class="card">INF<div id="INF" class="value">0</div></div>
+</div>
+
+<div class="section">
+<b>SCENARIO PANEL</b><br>
+<span id="scenarioText">Idle</span>
+</div>
+
+<div class="section">
+<b>RISK PANEL</b><br>
+<span id="riskText">Risk: LOW</span>
+</div>
+
+<div class="section">
+<b>SOLUTION OPTIONS</b><br>
+<span id="solutionText">-</span>
+</div>
+
+<div class="section">
+<b>ACTION SEQUENCE PROMPT</b><br>
+<span id="actionText">Awaiting input</span>
+</div>
+
+<div style="text-align:center">
+<button onclick="run('NORMAL')">NORMAL</button>
+<button onclick="run('CONTINGENCY')">CONTINGENCY</button>
+<button onclick="run('STRATEGIC')">STRATEGIC</button>
+<button onclick="run('EVAL')">EVALUATION</button>
+<button onclick="resetAll()">RESET</button>
+</div>
+
+<div id="log"></div>
+
+<script>
+
+const state = {FX:0,DC:0,CYB:0,INF:0};
+let log=[];
+
+const scenarios={
+NORMAL:{name:"Normal",action:"Stable energy mix"},
+CONTINGENCY:{name:"Crisis",action:"Increase biodiesel B50+"},
+STRATEGIC:{name:"Reserve",action:"Deploy reserves"},
+EVAL:{name:"Evaluation",action:"Analyze macro indicators"}
+};
+
+function risk(){
+let r=state.FX+state.DC+state.CYB+state.INF;
+if(r>60)return"CRITICAL";
+if(r>30)return"HIGH";
+if(r>10)return"MEDIUM";
+return"LOW";
+}
+
+function solutions(m){
+if(m==="CONTINGENCY")return["Increase B50+","Reduce imports","Activate CPO"];
+if(m==="STRATEGIC")return["Release reserves","Balance supply"];
+if(m==="NORMAL")return["Maintain solar dominance","Reduce subsidy load"];
+if(m==="EVAL")return["Monitor oil & FX"];
+return["-"];
+}
+
+function run(m){
+state.FX+=10;
+const s=scenarios[m];
+
+scenarioText.innerHTML=s.name;
+riskText.innerText="Risk: "+risk();
+solutionText.innerHTML=solutions(m).map(x=>"• "+x).join("<br>");
+actionText.innerText=s.action;
+
+log.push(m);
+document.getElementById("log").innerHTML=log.slice(-10).join("<br>");
+}
+
+function resetAll(){
+state.FX=state.DC=state.CYB=state.INF=0;
+log=[];
+scenarioText.innerText="Idle";
+riskText.innerText="Risk: LOW";
+solutionText.innerText="-";
+actionText.innerText="Awaiting input";
+}
+
+setInterval(()=>{
+FX.innerText=state.FX;
+DC.innerText=state.DC;
+CYB.innerText=state.CYB;
+INF.innerText=state.INF;
+},500);
+
+</script>
+
+</body>
+</html>
