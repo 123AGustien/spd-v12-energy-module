@@ -1,23 +1,49 @@
 export const scenarios = {
-
   FX: {
+    id: "FX",
     name: "FX Volatility Spike",
-    description: "Rapid currency fluctuations increase import costs and place pressure on energy affordability."
+    description: "Currency volatility spike impacting system stability",
+    effects: {
+      FX: 20,
+      INF: 5,
+      DC: 0,
+      CYB: 2
+    }
   },
 
   INF: {
+    id: "INF",
     name: "Infrastructure Stress",
-    description: "Infrastructure and logistics constraints disrupt fuel distribution and increase operational risk."
+    description: "Physical infrastructure load increases across nodes",
+    effects: {
+      FX: 0,
+      INF: 25,
+      DC: 10,
+      CYB: 0
+    }
   },
 
   DC: {
-    name: "Data Centre Load Surge",
-    description: "High computing and energy demand reduce operational efficiency and increase system load."
+    id: "DC",
+    name: "Data Centre Overload",
+    description: "Compute saturation detected in core nodes",
+    effects: {
+      FX: 5,
+      INF: 10,
+      DC: 30,
+      CYB: 5
+    }
   },
 
   CYB: {
-    name: "Cyber Security Event",
-    description: "A cyber incident affects system integrity and requires additional resilience measures."
+    id: "CYB",
+    name: "Cyber Disruption",
+    description: "Security anomalies detected in system layer",
+    effects: {
+      FX: 10,
+      INF: 5,
+      DC: 10,
+      CYB: 30
+    }
   }
-
 };
