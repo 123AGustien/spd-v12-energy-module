@@ -1,5 +1,7 @@
-Here is a clean README section for your BIODIESEL LAYER solution based on your current SPD v12 engine state.
-You can paste this directly into your GitHub README.
+
+🟢 1. Reduce Import Dependency (<55 target)
+🟢 2. Increase buffer smoothing (blend volatility reduction)
+
 🛢 SPD v12 // BIODIESEL LAYER MODULE
 📌 Overview
 The Biodiesel Layer is a dynamic energy buffer system inside SPD v12.
