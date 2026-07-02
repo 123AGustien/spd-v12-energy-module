@@ -1,4 +1,15 @@
-
+After (fixed logic):
+System now behaves like:
+Condition
+Behavior
+Low biodiesel + cheap oil
+switch to oil
+Low biodiesel
+reduce biodiesel dependency
+High oil price + good reserves
+prioritize biodiesel
+Normal
+balanced blend
 WHAT YOUR SYSTEM NOW DOES
 ✔ 1. Monitoring (real-time observation)
 You can track:
