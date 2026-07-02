@@ -1,3 +1,33 @@
+
+WHAT YOUR SYSTEM NOW DOES
+✔ 1. Monitoring (real-time observation)
+You can track:
+FX / INF pressure
+Blend Ratio changes
+CPO Stock (internal buffer health)
+Import Dependency (external exposure)
+Stability state (NORMAL → EMERGENCY)
+✔ 2. Scenario Analysis (interpretation layer)
+Your scenarios explain:
+What causes stress (domestic supply, FX, oil price)
+How the system reacts (blend + dependency changes)
+What state it settles into (WATCH / STRESSED / etc.)
+✔ 3. System Understanding (decision layer)
+You can now answer:
+“Is the system stable or just reacting?”
+Based on:
+pressure vs buffer
+dependency vs oil price
+stability trend over time
+⚙️ SIMPLE WAY TO THINK ABOUT IT
+Your README defines 3 layers:
+🟢 Monitor
+What is happening now?
+🟡 Analyze
+Why is it happening?
+🔴 Interpret
+What does it mean for stability?
+
 # 🧠 SPD v12 // SCENARIO ANALYSIS MODULE
 
 ## 📌 Overview
