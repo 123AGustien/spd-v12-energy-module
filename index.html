@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SPD v12 // ENERGY MODULE SIMULATOR</title>
+<title>SPD v12 // ENERGY MODULE v2 (CASCADE)</title>
 
 <style>
 body{
@@ -51,9 +51,7 @@ cursor:pointer;
 border-radius:4px;
 }
 
-button:hover{
-background:#2b568a;
-}
+button:hover{background:#2b568a;}
 
 .module{
 margin:10px;
@@ -80,11 +78,10 @@ border-left:2px solid #1f3b5c;
 
 <body>
 
-<div class="header">🛰 SPD v12 // ENERGY MODULE SIMULATOR</div>
+<div class="header">🛰 SPD v12 // ENERGY MODULE v2 (CASCADE SYSTEM)</div>
 
-<div id="statusBar">STATUS: STABLE</div>
+<div id="statusBar">STATUS: INITIALISING</div>
 
-<!-- METRICS -->
 <div class="panel">
 <div class="card">FX<div id="FX" class="value">0</div></div>
 <div class="card">DC<div id="DC" class="value">0</div></div>
@@ -92,7 +89,13 @@ border-left:2px solid #1f3b5c;
 <div class="card">INF<div id="INF" class="value">0</div></div>
 </div>
 
-<!-- MODULE PANELS -->
+<div class="panel">
+<div class="card">ENERGY INDEX<div id="EN" class="value">0</div></div>
+<div class="card">POLICY STATE<div id="PS" class="value">STABLE</div></div>
+<div class="card">RISK<div id="RK" class="value">LOW</div></div>
+<div class="card">CASCADES<div id="CS" class="value">0</div></div>
+</div>
+
 <div class="module" id="scenarioPanel">
 <b>SCENARIO PANEL</b><br>Idle
 </div>
@@ -109,7 +112,6 @@ border-left:2px solid #1f3b5c;
 <b>ACTION SEQUENCE PROMPT</b><br>- Awaiting input
 </div>
 
-<!-- BUTTONS -->
 <div style="text-align:center">
 <button onclick="inject('FX')">FX STRESS</button>
 <button onclick="inject('DC')">DC LOAD</button>
@@ -123,78 +125,93 @@ border-left:2px solid #1f3b5c;
 <script>
 
 /* STATE */
-const state = {
-FX:0,
-DC:0,
-CYB:0,
-INF:0
-};
-
+const state = {FX:0, DC:0, CYB:0, INF:0};
 let log = [];
+let cascadeCount = 0;
 
 /* SCENARIOS */
 const scenarios = {
-FX:{
-name:"Financial Stress Injection",
-desc:"FX volatility increases system instability",
-impact:"Spreads into DC liquidity pressure"
-},
-DC:{
-name:"Data Centre Load Spike",
-desc:"Compute demand surge detected",
-impact:"Triggers INF stress propagation"
-},
-CYB:{
-name:"Cyber Event Triggered",
-desc:"Security anomaly detected in network layer",
-impact:"Reduces system reliability"
-},
-INF:{
-name:"Infrastructure Strain",
-desc:"Physical system stress escalation",
-impact:"Feeds back into FX instability loop"
-}
+FX:{name:"FX Volatility Spike",impact:"Triggers DC liquidity stress"},
+DC:{name:"Data Centre Overload",impact:"Amplifies INF strain"},
+CYB:{name:"Cyber Disruption",impact:"Reduces systemic trust"},
+INF:{name:"Infrastructure Stress",impact:"Feeds FX instability loop"}
 };
 
 /* LOG */
-function addLog(msg){
-log.push(msg);
+function addLog(m){
+log.push(m);
 document.getElementById("log").innerHTML =
 log.slice(-12).map(x=>"→ "+x).join("<br>");
 }
 
-/* RISK ENGINE */
-function riskLevel(){
-let total = state.FX + state.DC + state.CYB + state.INF;
+/* ENERGY MODEL (NEW) */
+function energyIndex(){
+let oilShock = state.FX * 0.6;
+let cpoStress = state.INF * 0.4;
+return oilShock + cpoStress;
+}
 
-if(total > 60) return "CRITICAL";
-if(total > 30) return "HIGH";
-if(total > 10) return "MEDIUM";
+/* CASCADE ENGINE (NEW NON-LINEAR LOGIC) */
+function applyCascade(type){
+
+if(type === "FX"){
+state.DC += 3;
+state.INF += 2;
+}
+
+if(type === "DC"){
+state.INF += 3;
+state.CYB += 1;
+}
+
+if(type === "CYB"){
+state.FX += 2;
+state.INF += 1;
+}
+
+if(type === "INF"){
+state.FX += 3;
+state.DC += 1;
+}
+cascadeCount++;
+}
+
+/* RISK ENGINE (UPGRADED) */
+function riskLevel(){
+
+let total =
+state.FX*1.2 +
+state.DC*1.1 +
+state.CYB*1.4 +
+state.INF*1.3 +
+energyIndex()*0.8;
+
+if(total > 120) return "CRITICAL";
+if(total > 70) return "HIGH";
+if(total > 35) return "MEDIUM";
 return "LOW";
 }
 
-/* SOLUTION ENGINE */
+/* POLICY ENGINE (NEW) */
+function policyState(risk){
+if(risk === "CRITICAL") return "FULL_OVERRIDE";
+if(risk === "HIGH") return "CRISIS_MODE";
+if(risk === "MEDIUM") return "ENERGY_SECURITY";
+return "COST_OPTIMISATION";
+}
+
+/* SOLUTIONS */
 function solutions(level){
 if(level==="CRITICAL"){
-return [
-"Emergency stabilisation protocol activated",
-"Auto load shedding enabled",
-"System isolation engaged"
-];
+return ["Emergency shutdown buffers","Auto load shedding","System isolation"];
 }
 if(level==="HIGH"){
-return [
-"Partial damping applied",
-"Risk redistribution active"
-];
+return ["Activate reserves","Reduce external dependency"];
 }
 if(level==="MEDIUM"){
-return [
-"Monitoring intensified",
-"Minor balancing active"
-];
+return ["Stabilisation active","Monitor volatility"];
 }
-return ["No intervention required"];
+return ["Normal operations"];
 }
 
 /* ACTION */
@@ -202,63 +219,73 @@ function inject(type){
 
 state[type] += 10;
 
-const s = scenarios[type];
-const risk = riskLevel();
+/* cascade propagation */
+applyCascade(type);
+
+let risk = riskLevel();
+let policy = policyState(risk);
+let energy = energyIndex();
 
 document.getElementById("scenarioPanel").innerHTML =
 "<b>SCENARIO PANEL</b><br>" +
-s.name + "<br>" + s.desc;
+scenarios[type].name + "<br>" +
+scenarios[type].impact;
 
 document.getElementById("riskPanel").innerHTML =
-"<b>RISK PANEL</b><br>Risk: " + risk;
+"<b>RISK PANEL</b><br>" +
+"Risk: " + risk;
 
 document.getElementById("solutionPanel").innerHTML =
 "<b>SOLUTION OPTIONS</b><br>" +
 solutions(risk).map(x=>"• "+x).join("<br>");
 
 document.getElementById("actionPanel").innerHTML =
-"<b>ACTION SEQUENCE PROMPT</b><br>" +
+"<b>ACTION SEQUENCE</b><br>" +
 "Step 1: Detect " + type + "<br>" +
-"Step 2: Evaluate cascade impact<br>" +
-"Step 3: Apply mitigation → " + s.impact;
+"Step 2: Cascade propagation active<br>" +
+"Step 3: Apply mitigation → " + scenarios[type].impact;
 
-addLog("INJECT " + type + " → " + s.name);
+addLog("INJECT " + type + " | CASCADE=" + cascadeCount);
 
-updateStatus();
+updateUI(risk, policy, energy);
 }
 
-/* RESET */
-function resetAll(){
-state.FX=0;
-state.DC=0;
-state.CYB=0;
-state.INF=0;
-log=[];
-addLog("SYSTEM RESET");
-updateStatus();
-}
+/* UI UPDATE */
+function updateUI(risk, policy, energy){
 
-/* STATUS */
-function updateStatus(){
 document.getElementById("statusBar").innerText =
-"STATUS: " + riskLevel();
-}
+"STATUS: " + risk + " | POLICY: " + policy;
 
-/* RENDER */
-function render(){
+document.getElementById("EN").innerText =
+energy.toFixed(1);
+
+document.getElementById("PS").innerText =
+policy;
+
+document.getElementById("RK").innerText =
+risk;
+
+document.getElementById("CS").innerText =
+cascadeCount;
+
+/* render metrics */
 FX.innerText = state.FX;
 DC.innerText = state.DC;
 CYB.innerText = state.CYB;
 INF.innerText = state.INF;
 }
 
-setInterval(()=>{
-render();
-updateStatus();
-},500);
+/* RESET */
+function resetAll(){
+state.FX=0;state.DC=0;state.CYB=0;state.INF=0;
+cascadeCount=0;
+log=[];
+addLog("SYSTEM RESET");
+updateUI("LOW","STABLE",0);
+}
 
-render();
-updateStatus();
+/* INIT */
+updateUI("LOW","STABLE",0);
 
 </script>
 
