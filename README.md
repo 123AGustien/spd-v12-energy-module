@@ -1,4 +1,7 @@
-# 🛰 SPD v12 ENERGY MODULE
+
+When the biodiesel is low we use diesel export When oil prices are low we use export oil When oil prices are high we use biodiesel
+
+After (fixed logic): System now behaves like: Condition Behavior Low biodiesel + cheap oil switch to oil Low biodiesel reduce biodiesel dependency High oil price + good reserves prioritize biodiesel Normal balanced blend # 🛰 SPD v12 ENERGY MODULE
 
 ## 📌 Overview
 Adaptive energy scenario simulation system for FX, infrastructure, and biodiesel policy modelling.
