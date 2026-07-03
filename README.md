@@ -1,3 +1,4 @@
+A weaker rupiah has raised the cost of imported raw materials, prompting businesses to increase selling prices and feeding inflation into the broader economy, 
 
 When the biodiesel is low we use diesel export When oil prices are low we use export oil When oil prices are high we use biodiesel
 
