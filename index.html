@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM</title>
+<meta charset="UTF-8" />
+<title>SPD v12 AUTONOMOUS COCKPIT</title>
 
 <style>
 body {
@@ -12,112 +12,250 @@ body {
   color: #cfe8ff;
 }
 
-.header {
+header {
   padding: 12px;
   background: #0c1625;
   text-align: center;
   font-weight: bold;
+  letter-spacing: 1px;
 }
 
-.container {
+.grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
 }
 
 .panel {
   background: #0b1220;
-  padding: 12px;
-  border: 1px solid #1c2a3a;
-  border-radius: 8px;
+  border: 1px solid #1c2a44;
+  padding: 10px;
+  border-radius: 6px;
 }
 
 button {
-  padding: 8px;
-  margin-top: 6px;
-  width: 100%;
-  background: #1c2f4a;
-  color: white;
-  border: none;
+  margin: 4px;
+  padding: 6px 10px;
+  background: #13243d;
+  border: 1px solid #27496d;
+  color: #cfe8ff;
   cursor: pointer;
 }
 
 button:hover {
-  background: #2a4b73;
+  background: #1b3558;
 }
+
+.status {
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.bad { color: #ff6b6b; }
+.warn { color: #ffd166; }
+.good { color: #06d6a0; }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM
+<header>SPD v12 AUTONOMOUS COCKPIT // ENERGY + BIODIESEL SYSTEM</header>
+
+<div class="grid">
+
+<!-- FX / INF -->
+<div class="panel">
+<h3>FX / INF / DC / CYB SYSTEM</h3>
+<div class="status">FX: <span id="fx">0</span></div>
+<div class="status">INF: <span id="inf">0</span></div>
+<div class="status">DC: <span id="dc">0</span></div>
+<div class="status">CYB: <span id="cyb">0</span></div>
+
+<button onclick="inject('FX')">Inject FX</button>
+<button onclick="inject('INF')">Inject INF</button>
+<button onclick="inject('DC')">Inject DC</button>
+<button onclick="inject('CYB')">Inject CYB</button>
 </div>
 
-<div class="container">
+<!-- BIODIESEL -->
+<div class="panel">
+<h3>BIODIESEL LAYER</h3>
+<div class="status">Blend Ratio: <span id="blend">35</span></div>
+<div class="status">CPO Stock: <span id="cpo">100</span></div>
+<div class="status">Import Dependency: <span id="import">60</span>%</div>
+<div class="status">Stability: <span id="bioStatus">NORMAL</span></div>
 
-  <!-- FX PANEL -->
-  <div class="panel">
-    <h3>FX / INF SYSTEM</h3>
-    <div>FX: <span id="FX">0</span></div>
-    <div>INF: <span id="INF">0</span></div>
-    <div>DC: <span id="DC">0</span></div>
-    <div>CYB: <span id="CYB">0</span></div>
+<button onclick="oilShock('HIGH')">Oil Price HIGH</button>
+<button onclick="oilShock('LOW')">Oil Price LOW</button>
+<button onclick="biodieselShortage()">Biodiesel Shortage</button>
+</div>
 
-    <button onclick="trigger('FX')">Inject FX</button>
-    <button onclick="trigger('INF')">Inject INF</button>
-  </div>
+<!-- SCENARIO -->
+<div class="panel">
+<h3>SCENARIO PANEL</h3>
+<div id="scenario">Idle</div>
+<button onclick="runScenario()">Run Scenario</button>
+</div>
 
-  <!-- BIODIESEL PANEL -->
-  <div class="panel">
-    <h3>BIODIESEL LAYER</h3>
+<!-- RISK -->
+<div class="panel">
+<h3>RISK PANEL</h3>
+<div id="risk">LOW</div>
+</div>
 
-    <div>Blend Ratio: <span id="blend">35</span></div>
-    <div>CPO Stock: <span id="cpo">100</span></div>
-    <div>Import Dependency: <span id="imp">60</span></div>
-    <div>Stability: <span id="stab">NORMAL</span></div>
+<!-- SOLUTION -->
+<div class="panel">
+<h3>SOLUTION ENGINE</h3>
+<div id="solution">Awaiting scenario...</div>
+</div>
 
-    <!-- 🔥 CONTROL BUTTONS -->
-    <button onclick="trigger('OIL_HIGH')">Oil Price HIGH</button>
-    <button onclick="trigger('OIL_LOW')">Oil Price LOW</button>
-    <button onclick="trigger('BIODIESEL_SHORT')">Biodiesel Shortage</button>
-  </div>
+<!-- ACTION -->
+<div class="panel">
+<h3>ACTION SEQUENCE</h3>
+<div id="action">Awaiting input...</div>
+</div>
 
-  <!-- SCENARIO PANEL -->
-  <div class="panel" id="scenarioPanel">
-    <h3>SCENARIO PANEL</h3>
-    <div id="scenarioInfo">Idle</div>
-  </div>
-
-  <!-- RISK PANEL -->
-  <div class="panel" id="riskPanel">
-    <h3>RISK PANEL</h3>
-    Risk: LOW
-  </div>
-
-  <!-- SOLUTION PANEL -->
-  <div class="panel" id="solutionPanel">
-    <h3>SOLUTION PANEL</h3>
-    Awaiting scenario...
-  </div>
-
-  <!-- ACTION PANEL -->
-  <div class="panel" id="actionPanel">
-    <h3>ACTION SEQUENCE</h3>
-    Awaiting input...
-  </div>
-
-  <!-- 🧠 DECISION PANEL -->
-  <div class="panel" id="decisionPanel">
-    <h3>DECISION PANEL</h3>
-    Awaiting analysis...
-  </div>
+<!-- DECISION -->
+<div class="panel">
+<h3>DECISION PANEL</h3>
+<div id="decision">Awaiting analysis...</div>
+</div>
 
 </div>
 
-<!-- UI CONTROLLER -->
-<script type="module" src="./ui.js"></script>
+<script>
+let state = {
+  FX: 0,
+  INF: 0,
+  DC: 0,
+  CYB: 0,
+  blend: 35,
+  cpo: 100,
+  import: 60
+};
+
+function updateUI() {
+  document.getElementById("fx").innerText = state.FX;
+  document.getElementById("inf").innerText = state.INF;
+  document.getElementById("dc").innerText = state.DC;
+  document.getElementById("cyb").innerText = state.CYB;
+
+  document.getElementById("blend").innerText = state.blend;
+  document.getElementById("cpo").innerText = state.cpo;
+  document.getElementById("import").innerText = state.import;
+
+  computeRisk();
+}
+
+function inject(type) {
+  state[type] += 10;
+
+  document.getElementById("action").innerText =
+    `Injected ${type}: +10`;
+
+  evaluate();
+  updateUI();
+}
+
+function oilShock(level) {
+  if (level === "HIGH") {
+    state.import += 10;
+    state.blend -= 5;
+  } else {
+    state.import -= 10;
+    state.blend += 3;
+  }
+
+  document.getElementById("action").innerText =
+    `Oil price shock: ${level}`;
+
+  evaluate();
+  updateUI();
+}
+
+function biodieselShortage() {
+  state.cpo -= 20;
+  state.blend -= 10;
+
+  document.getElementById("action").innerText =
+    "Biodiesel shortage triggered";
+
+  evaluate();
+  updateUI();
+}
+
+function runScenario() {
+  const scenarios = [
+    "FX volatility spike",
+    "INF inflation surge",
+    "DC infrastructure stress",
+    "CYB attack simulation"
+  ];
+
+  const pick = scenarios[Math.floor(Math.random() * scenarios.length)];
+
+  document.getElementById("scenario").innerText = pick;
+
+  document.getElementById("action").innerText =
+    "Scenario executed: " + pick;
+
+  evaluate();
+}
+
+function computeRisk() {
+  let riskScore =
+    state.FX +
+    state.INF +
+    state.DC +
+    state.CYB +
+    (100 - state.blend) +
+    state.import;
+
+  let riskLevel = "LOW";
+  let color = "good";
+
+  if (riskScore > 120) {
+    riskLevel = "HIGH";
+    color = "bad";
+  } else if (riskScore > 70) {
+    riskLevel = "MEDIUM";
+    color = "warn";
+  }
+
+  const riskEl = document.getElementById("risk");
+  riskEl.innerText = riskLevel;
+  riskEl.className = color;
+}
+
+function evaluate() {
+  let solution = "";
+  let decision = "";
+
+  if (state.FX > 30) {
+    solution += "Stabilize FX via liquidity control. ";
+  }
+  if (state.INF > 30) {
+    solution += "Apply inflation dampening. ";
+  }
+  if (state.import > 70) {
+    solution += "Reduce import dependency immediately. ";
+  }
+  if (state.blend < 25) {
+    solution += "Increase biodiesel blending capacity. ";
+  }
+
+  if (solution === "") {
+    solution = "System nominal. No intervention required.";
+    decision = "Maintain autonomous monitoring.";
+  } else {
+    decision = "Activate mitigation protocols and rebalance system layers.";
+  }
+
+  document.getElementById("solution").innerText = solution;
+  document.getElementById("decision").innerText = decision;
+}
+</script>
 
 </body>
 </html>
