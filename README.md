@@ -388,7 +388,7 @@ Sextant Protocol
 Rule Library
       ↓
 Energy Module Simulator
-      ↓
+      ↓j
 Risk & Decision Engine
       ↓
 Output: Policy Scenario Response
@@ -400,3 +400,28 @@ Mode: Deterministic scenario simulation
 📌 Key Concept
 This module demonstrates:
 Energy policy as a dynamic risk-adaptive system, not a fixed regulatory framework.
+
+Based on the cockpit you've been building, Inject FX is a simulation control, not a real financial operation.
+In your SPD v12 cockpit, the FX / INF SYSTEM panel has four state variables:
+FX – Foreign exchange stress
+INF – Inflation pressure
+DC – Data centre / infrastructure impact
+CYB – Cyber impact
+When you press Inject FX, the simulator should artificially introduce an FX shock into the model. For example:
+Increase the FX value.
+Recalculate any linked variables (such as import dependency or economic balance, if your model connects them).
+Update the Risk Panel if the FX shock raises overall risk.
+Update the Solution Panel with any recommended response.
+Update the Decision Panel with an explanation of why the recommendation changed.
+For example:
+Initial state:
+FX: 0
+Risk: LOW
+Solution: Awaiting scenario
+After pressing Inject FX:
+FX: 40
+Risk: MEDIUM
+Decision: "Foreign exchange volatility detected."
+Solution: "Increase biodiesel utilisation to reduce imported fuel exposure."
+In other words, Inject FX is the event that starts a scenario. The rest of the cockpit reacts to that event by recalculating risk and displaying the recommended operational response.
+The same idea applies to Inject INF, except the initiating event is an inflation shock rather than a foreign exchange shock.
