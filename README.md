@@ -1,4 +1,19 @@
-When the biodiesel is low we use diesel export
+## Energy Decision Logic
+
+### Rule 1
+If Biodiesel Blend is LOW:
+→ Recommend: Use Diesel Export
+
+### Rule 2
+If Global Oil Price is LOW:
+→ Recommend: Export Crude Oil
+
+### Rule 3
+If Global Oil Price is HIGH:
+→ Recommend: Maximize Biodiesel Utilization
+
+### Cockpit Behavior
+The Solution Panel highlights the recommended action based on the current system state. The recommendation updates automatically as energy, biodiesel, and market conditions change. the biodiesel is low we use diesel export
 When oil prices are low we use export oil 
 When oil prices are high we use biodiesel 
 
