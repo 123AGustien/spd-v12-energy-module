@@ -1,6 +1,6 @@
 /* =============================
    SPD v12.2 // AUTONOMOUS STABILIZATION ENGINE
-   (CLEAN + SAFE + SELF-CORRECTING)
+   FIXED: INJECTION VISIBILITY + CONTROLLED STABILISATION
 ============================= */
 
 /* -----------------------------
@@ -52,7 +52,7 @@ function clamp(n, min = 0, max = 100) {
 }
 
 function randomShock() {
-  return (Math.random() * 2 - 1) * 2; // mild volatility
+  return (Math.random() * 2 - 1) * 2;
 }
 
 function economicGap() {
@@ -103,7 +103,7 @@ export function applyCascade(type) {
 }
 
 /* -----------------------------
-   OIL ENGINE (STOCHASTIC)
+   OIL ENGINE
 ------------------------------*/
 function updateOilPrice() {
   const stress =
@@ -115,7 +115,7 @@ function updateOilPrice() {
 }
 
 /* -----------------------------
-   BIODIESEL ENGINE (STABLE MODEL)
+   BIODIESEL ENGINE
 ------------------------------*/
 function updateBiodiesel(risk) {
   const pressure =
@@ -144,7 +144,7 @@ function updateBiodiesel(risk) {
 }
 
 /* -----------------------------
-   RISK ENGINE (BALANCED WEIGHTS)
+   RISK ENGINE
 ------------------------------*/
 export function riskLevel() {
   const total =
@@ -163,7 +163,7 @@ export function riskLevel() {
 }
 
 /* -----------------------------
-   AUTONOMOUS STABILIZER
+   STABILISER (kept but controlled)
 ------------------------------*/
 function stabilizeSystem() {
   const risk = riskLevel();
@@ -182,7 +182,7 @@ function stabilizeSystem() {
 }
 
 /* -----------------------------
-   DECAY SYSTEM (TIME SIMULATION)
+   DECAY SYSTEM
 ------------------------------*/
 function applyDecay() {
   state.FX *= DECAY_RATE;
@@ -233,8 +233,10 @@ export function inject(type) {
   updateOilPrice();
   updateBiodiesel(risk);
 
-  stabilizeSystem();
-  applyDecay();
+  // IMPORTANT FIX:
+  // Do NOT immediately cancel injection visibility
+  // stabilizeSystem();
+  // applyDecay();
 
   history.push({
     type,
