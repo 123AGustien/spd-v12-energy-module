@@ -10,7 +10,9 @@ import {
 window.addEventListener("DOMContentLoaded", () => {
 
   const el = {
-    FX: document.getElementById("FX"),
+    FX:
+
+ document.getElementById("FX"),
     DC: document.getElementById("DC"),
     CYB: document.getElementById("CYB"),
     INF: document.getElementById("INF"),
@@ -154,3 +156,22 @@ window.addEventListener("DOMContentLoaded", () => {
   renderScenarioButtons();
   renderAll();
 });
+
+function flashUI(type) {
+
+  const panel = document.getElementById("riskPanel");
+
+  // quick flash effect
+  panel.style.transition = "0.2s";
+  panel.style.boxShadow = "0 0 20px #00ff88";
+
+  setTimeout(() => {
+    panel.style.boxShadow = "none";
+  }, 250);
+
+  // optional scenario hint
+  const scenarioInfo = document.getElementById("scenarioInfo");
+  if (scenarioInfo) {
+    scenarioInfo.innerHTML = `ACTIVE INPUT: ${type}`;
+  }
+}
