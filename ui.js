@@ -31,18 +31,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let activeScenario = "FX";
 
-  /* -----------------------------
-     MAIN RENDER
-  ------------------------------*/
+  /* =============================
+     RENDER SYSTEM
+  ==============================*/
   function renderAll() {
 
-    // CORE STATE
     if (el.FX) el.FX.innerText = state.FX.toFixed(0);
     if (el.DC) el.DC.innerText = state.DC.toFixed(0);
     if (el.CYB) el.CYB.innerText = state.CYB.toFixed(0);
     if (el.INF) el.INF.innerText = state.INF.toFixed(0);
 
-    // BIODIESEL
     if (el.blend) el.blend.innerText = state.biodiesel.toFixed(1);
     if (el.cpo) el.cpo.innerText = state.cpoReserve;
     if (el.imp) el.imp.innerText = "—";
@@ -51,15 +49,16 @@ window.addEventListener("DOMContentLoaded", () => {
     renderPanels();
   }
 
-  /* -----------------------------
+  /* =============================
      PANELS
-  ------------------------------*/
+  ==============================*/
   function renderPanels() {
 
     const risk = riskLevel();
+
     const scenario = scenarios[activeScenario] || {
       name: "NO SCENARIO",
-      description: "Awaiting input",
+      description: "",
       impact: ""
     };
 
@@ -83,48 +82,20 @@ window.addEventListener("DOMContentLoaded", () => {
       4. Stabilisation applied
     `;
 
-    renderScenarioInfo(scenario);
-    renderDecisionPanel(risk, scenario);
-  }
-
-  /* -----------------------------
-     SCENARIO INFO
-  ------------------------------*/
-  function renderScenarioInfo(scenario) {
     el.scenarioInfo.innerHTML = `
       <div style="margin-top:10px;">
         <b>${scenario.name}</b><br>
-        <small>${scenario.description}</small><br>
-        <small><i>${scenario.impact || ""}</i></small>
+        <small>${scenario.impact || ""}</small>
       </div>
     `;
+
+    renderDecisionPanel(risk, scenario);
   }
 
-  /* -----------------------------
-     SCENARIO BUTTONS
-  ------------------------------*/
-  function renderScenarioButtons() {
-
-    el.scenarioButtons.innerHTML = "";
-
-    Object.entries(scenarios).forEach(([key, s]) => {
-
-      const btn = document.createElement("button");
-      btn.className = "scenario-btn";
-      btn.innerHTML = s.name;
-
-      btn.onclick = () => trigger(key);
-
-      el.scenarioButtons.appendChild(btn);
-    });
-  }
-
-  /* -----------------------------
+  /* =============================
      DECISION PANEL
-  ------------------------------*/
+  ==============================*/
   function renderDecisionPanel(risk, scenario) {
-
-    if (!el.decisionPanel) return;
 
     let verdict, reason, action;
 
@@ -151,7 +122,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     el.decisionPanel.innerHTML = `
       <h3>DECISION PANEL</h3>
-
       <b>${verdict}</b><br><br>
       <b>Reason:</b> ${reason}<br><br>
       <b>Action:</b> ${action}<br><br>
@@ -159,34 +129,82 @@ window.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  /* -----------------------------
-     FLASH FEEDBACK SYSTEM
-  ------------------------------*/
+  /* =============================
+     CONTROL ROOM FX ENGINE
+  ==============================*/
+  function controlRoomFX(type, risk) {
+
+    const intensityMap = {
+      LOW: 1,
+      MEDIUM: 1.5,
+      HIGH: 2,
+      CRITICAL: 3
+    };
+
+    const intensity = intensityMap[risk] || 1;
+
+    const panels = document.querySelectorAll(".panel");
+
+    panels.forEach(p => {
+      p.style.transition = "0.15s";
+    });
+
+    switch (type) {
+
+      case "FX":
+        document.body.style.boxShadow =
+          `inset 0 0 ${80 * intensity}px rgba(255,0,0,0.4)`;
+        break;
+
+      case "INF":
+        document.body.style.boxShadow =
+          `inset 0 0 ${80 * intensity}px rgba(0,150,255,0.4)`;
+        break;
+
+      case "CYB":
+        document.body.style.filter = "contrast(1.2) hue-rotate(90deg)";
+        setTimeout(() => document.body.style.filter = "", 250);
+        break;
+
+      case "DC":
+        panels.forEach(p => {
+          const x = (Math.random() * 2 - 1) * intensity;
+          const y = (Math.random() * 2 - 1) * intensity;
+          p.style.transform = `translate(${x}px, ${y}px)`;
+        });
+        break;
+    }
+
+    setTimeout(() => {
+      document.body.style.boxShadow = "none";
+      panels.forEach(p => p.style.transform = "none");
+    }, 300);
+  }
+
+  /* =============================
+     FLASH FEEDBACK
+  ==============================*/
   function flashUI(type) {
 
     const panel = document.getElementById("riskPanel");
-    if (!panel) return;
+    if (panel) {
+      panel.style.transition = "0.2s";
+      panel.style.boxShadow = "0 0 20px #00ff88";
 
-    panel.style.transition = "0.2s";
-    panel.style.boxShadow = "0 0 20px #00ff88";
-
-    setTimeout(() => {
-      panel.style.boxShadow = "none";
-    }, 250);
+      setTimeout(() => {
+        panel.style.boxShadow = "none";
+      }, 250);
+    }
 
     const scenarioInfo = document.getElementById("scenarioInfo");
     if (scenarioInfo) {
-      scenarioInfo.innerHTML = `
-        <div>
-          <b>ACTIVE INPUT:</b> ${type}
-        </div>
-      `;
+      scenarioInfo.innerHTML = `<b>ACTIVE INPUT:</b> ${type}`;
     }
   }
 
-  /* -----------------------------
-     GLOBAL TRIGGER (FIXED)
-  ------------------------------*/
+  /* =============================
+     TRIGGER SYSTEM
+  ==============================*/
   window.trigger = function(type) {
 
     activeScenario = type;
@@ -196,11 +214,29 @@ window.addEventListener("DOMContentLoaded", () => {
     renderAll();
 
     flashUI(type);
+
+    controlRoomFX(type, riskLevel());
   };
 
-  /* -----------------------------
+  /* =============================
      INIT
-  ------------------------------*/
+  ==============================*/
+  function renderScenarioButtons() {
+
+    el.scenarioButtons.innerHTML = "";
+
+    Object.entries(scenarios).forEach(([key, s]) => {
+
+      const btn = document.createElement("button");
+      btn.className = "scenario-btn";
+      btn.innerHTML = s.name;
+
+      btn.onclick = () => trigger(key);
+
+      el.scenarioButtons.appendChild(btn);
+    });
+  }
+
   renderScenarioButtons();
   renderAll();
 });
