@@ -1,6 +1,6 @@
 /* =============================
    SPD v12.2 // AUTONOMOUS STABILIZATION ENGINE
-   FIXED: INJECTION VISIBILITY + CONTROLLED STABILISATION
+   FIXED + STABLE + UI SAFE VERSION
 ============================= */
 
 /* -----------------------------
@@ -59,9 +59,6 @@ function economicGap() {
   return state.demand - state.supply;
 }
 
-/* -----------------------------
-   SYSTEM VALIDATION
-------------------------------*/
 function isSystemType(type) {
   return ["FX", "DC", "CYB", "INF"].includes(type);
 }
@@ -77,6 +74,7 @@ export function energyIndex() {
    CASCADE ENGINE
 ------------------------------*/
 export function applyCascade(type) {
+
   switch (type) {
     case "FX":
       state.DC += 2;
@@ -118,6 +116,7 @@ function updateOilPrice() {
    BIODIESEL ENGINE
 ------------------------------*/
 function updateBiodiesel(risk) {
+
   const pressure =
     state.FX * 0.2 +
     state.INF * 0.25 +
@@ -147,6 +146,7 @@ function updateBiodiesel(risk) {
    RISK ENGINE
 ------------------------------*/
 export function riskLevel() {
+
   const total =
     state.FX * 1.0 +
     state.DC * 1.0 +
@@ -163,9 +163,10 @@ export function riskLevel() {
 }
 
 /* -----------------------------
-   STABILISER (kept but controlled)
+   STABILISATION ENGINE
 ------------------------------*/
 function stabilizeSystem() {
+
   const risk = riskLevel();
 
   const damping = {
@@ -195,6 +196,7 @@ function applyDecay() {
    SOLUTIONS ENGINE
 ------------------------------*/
 export function solutions(level) {
+
   const map = {
     CRITICAL: [
       "Emergency isolation protocol",
@@ -210,16 +212,19 @@ export function solutions(level) {
       "Monitoring reinforcement",
       "Soft balancing adjustments"
     ],
-    LOW: ["Normal operations"]
+    LOW: [
+      "Normal operations"
+    ]
   };
 
   return map[level];
 }
 
 /* -----------------------------
-   MAIN ENGINE
+   MAIN INJECTION ENGINE
 ------------------------------*/
 export function inject(type) {
+
   if (isSystemType(type)) {
     state[type] = clamp(state[type] + 10);
     applyCascade(type);
@@ -233,10 +238,8 @@ export function inject(type) {
   updateOilPrice();
   updateBiodiesel(risk);
 
-  // IMPORTANT FIX:
-  // Do NOT immediately cancel injection visibility
-  // stabilizeSystem();
-  // applyDecay();
+  stabilizeSystem();
+  applyDecay();
 
   history.push({
     type,
@@ -256,11 +259,22 @@ export function inject(type) {
 }
 
 /* -----------------------------
-   RESET
+   COUTER EXPORT (FIX FOR UI)
+------------------------------*/
+export function getCascadeCount() {
+  return cascadeCount;
+}
+
+/* -----------------------------
+   RESET SYSTEM
 ------------------------------*/
 export function reset() {
+
   Object.assign(state, {
-    FX: 0, DC: 0, CYB: 0, INF: 0,
+    FX: 0,
+    DC: 0,
+    CYB: 0,
+    INF: 0,
     biodiesel: 35,
     cpoReserve: 100,
     oilPrice: 70,
