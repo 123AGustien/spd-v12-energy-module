@@ -1,3 +1,7 @@
+When the biodiesel is low we use diesel export
+When oil prices are low we use export oil 
+When oil prices are high we use biodiesel 
+
 After (fixed logic):
 System now behaves like:
 Condition
