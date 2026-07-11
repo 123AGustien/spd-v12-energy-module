@@ -1,54 +1,160 @@
-(function () {
+/* =============================
+   SPD v12.2 // SOLUTION ENGINE
+   AUTONOMOUS RESPONSE LAYER
+   + METHANOL RESILIENCE LOGIC
+============================= */
 
-  // 🔹 SYSTEM STATE (adjust later if you already have engine.js)
-  const state = {
-    biodiesel: 35,
-    oilPrice: 90
+
+/* -----------------------------
+   SOLUTION DATABASE
+------------------------------*/
+
+const solutionMap = {
+
+  LOW: [
+    "Normal operations",
+    "Continue system monitoring",
+    "Maintain energy reserves"
+  ],
+
+
+  MEDIUM: [
+    "Increase monitoring frequency",
+    "Apply soft balancing adjustments",
+    "Review supply chain exposure"
+  ],
+
+
+  HIGH: [
+    "Activate strategic reserves",
+    "Reduce external dependency",
+    "Increase operational controls"
+  ],
+
+
+  CRITICAL: [
+    "Emergency stabilization protocol",
+    "Activate contingency reserves",
+    "Execute systemic recovery plan"
+  ]
+
+};
+
+
+/* -----------------------------
+   ENERGY SOLUTIONS
+------------------------------*/
+
+function energySolutions(state){
+
+  let actions = [];
+
+
+  if(state.cpoReserve < 40){
+
+    actions.push(
+      "Protect remaining CPO reserves"
+    );
+
+  }
+
+
+  if(state.methanolSupply < 50){
+
+    actions.push(
+      "Secure alternative methanol supply"
+    );
+
+    actions.push(
+      "Prioritize methanol allocation for biodiesel production"
+    );
+
+  }
+
+
+  if(state.methanolStorage < 50){
+
+    actions.push(
+      "Increase methanol strategic storage buffer"
+    );
+
+  }
+
+
+  if(state.methanolPrice === "HIGH"){
+
+    actions.push(
+      "Monitor biodiesel production cost pressure"
+    );
+
+  }
+
+
+  return actions;
+
+}
+
+
+/* -----------------------------
+   MAIN SOLUTION ENGINE
+------------------------------*/
+
+export function generateSolutions(level, state){
+
+  let solutions = [];
+
+
+  if(solutionMap[level]){
+
+    solutions.push(
+      ...solutionMap[level]
+    );
+
+  }
+
+
+  solutions.push(
+    ...energySolutions(state)
+  );
+
+
+  return solutions;
+
+}
+
+
+/* -----------------------------
+   DECISION SUMMARY
+------------------------------*/
+
+export function decisionSummary(level, state){
+
+  const solutions =
+    generateSolutions(level,state);
+
+
+  return {
+
+    riskLevel: level,
+
+    actions: solutions,
+
+    timestamp:
+      new Date().toISOString()
+
   };
 
-  // 🔹 RULE ENGINE
-  function getSolution() {
+}
 
-    if (state.biodiesel < 40) {
-      return "DIESEL_EXPORT";
-    }
 
-    if (state.oilPrice < 50) {
-      return "OIL_EXPORT";
-    }
+/* -----------------------------
+   LEGACY UI COMPATIBILITY
+------------------------------*/
 
-    if (state.oilPrice > 80) {
-      return "BIODIESEL";
-    }
+export function solutions(level){
 
-    return "STABLE";
-  }
+  return solutionMap[level] || [
+    "Awaiting analysis"
+  ];
 
-  // 🔹 UI BIND (connects to EXISTING HTML buttons)
-  function updateUI() {
-
-    const solution = getSolution();
-
-    const dieselBtn = document.getElementById("btn-diesel");
-    const oilBtn = document.getElementById("btn-oil");
-    const bioBtn = document.getElementById("btn-biodiesel");
-
-    if (dieselBtn) {
-      dieselBtn.classList.toggle("active", solution === "DIESEL_EXPORT");
-    }
-
-    if (oilBtn) {
-      oilBtn.classList.toggle("active", solution === "OIL_EXPORT");
-    }
-
-    if (bioBtn) {
-      bioBtn.classList.toggle("active", solution === "BIODIESEL");
-    }
-  }
-
-  // 🔹 RUN ON LOAD
-  document.addEventListener("DOMContentLoaded", function () {
-    updateUI();
-  });
-
-})();
+}
