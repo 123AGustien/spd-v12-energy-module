@@ -64,10 +64,11 @@ const solutionMap = {
 
 function energySolutions(state = {}) {
 
+
   let actions = [];
 
 
-  // CPO RESERVE CHECK
+  // CPO RESERVE
 
   if(state.cpoReserve !== undefined) {
 
@@ -83,7 +84,7 @@ function energySolutions(state = {}) {
 
 
 
-  // METHANOL SUPPLY CHECK
+  // METHANOL SUPPLY
 
   if(state.methanolSupply !== undefined) {
 
@@ -104,7 +105,7 @@ function energySolutions(state = {}) {
 
 
 
-  // METHANOL STORAGE CHECK
+  // METHANOL STORAGE
 
   if(state.methanolStorage !== undefined) {
 
@@ -120,7 +121,7 @@ function energySolutions(state = {}) {
 
 
 
-  // METHANOL PRICE PRESSURE
+  // METHANOL PRICE
 
   if(state.methanolPrice === "HIGH") {
 
@@ -137,7 +138,7 @@ function energySolutions(state = {}) {
 
 
 
-  // BIODIESEL RESPONSE
+  // BIODIESEL STATUS
 
   if(state.biodiesel !== undefined) {
 
@@ -196,16 +197,12 @@ export function generateSolutions(level, state = {}) {
 export function decisionSummary(level, state = {}) {
 
 
-  const actions =
-    generateSolutions(level, state);
-
-
-
   return {
 
     riskLevel: level,
 
-    actions,
+    actions:
+      generateSolutions(level, state),
 
     timestamp:
       new Date().toISOString()
@@ -218,7 +215,6 @@ export function decisionSummary(level, state = {}) {
 
 /* -----------------------------
    UI COMPATIBILITY
-   USED BY ui.js
 ------------------------------*/
 
 export function solutions(level, state = {}) {
@@ -228,13 +224,10 @@ export function solutions(level, state = {}) {
     generateSolutions(level, state);
 
 
-
   return output.length
     ? output
     : [
-
-      "Awaiting analysis"
-
-    ];
+        "Awaiting analysis"
+      ];
 
 }
