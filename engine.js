@@ -18,9 +18,10 @@ export const state = {
   biodiesel: 35,
   cpoReserve: 100,
 
-  // Methanol resilience dependency
+  // Methanol dependency layer
   methanolSupply: 100,
   methanolStorage: 100,
+  methanolPrice: "NORMAL",
 
   oilPrice: 70,
   supply: 100,
@@ -49,24 +50,34 @@ const DECAY_RATE = 0.92;
 ------------------------------*/
 export const scenarios = {
 
-  FX: {
-    name: "FX Volatility Spike",
-    impact: "Liquidity shock propagation"
+  FX:{
+    name:"FX Volatility Spike",
+    impact:"Liquidity shock propagation"
   },
 
-  DC: {
-    name: "Data Centre Overload",
-    impact: "Compute saturation pressure"
+  DC:{
+    name:"Data Centre Overload",
+    impact:"Compute saturation pressure"
   },
 
-  CYB: {
-    name: "Cyber Disruption",
-    impact: "Trust + FX destabilisation"
+  CYB:{
+    name:"Cyber Disruption",
+    impact:"Trust + FX destabilisation"
   },
 
-  INF: {
-    name: "Infrastructure Stress",
-    impact: "Supply chain degradation"
+  INF:{
+    name:"Infrastructure Stress",
+    impact:"Supply chain degradation"
+  },
+
+  METHANOL_SHORTAGE:{
+    name:"Methanol Supply Shortage",
+    impact:"Biodiesel production constraint"
+  },
+
+  METHANOL_PRICE_SPIKE:{
+    name:"Methanol Price Spike",
+    impact:"Biodiesel production cost pressure"
   }
 };
 
@@ -74,22 +85,28 @@ export const scenarios = {
 /* -----------------------------
    UTILITIES
 ------------------------------*/
-function clamp(n, min = 0, max = 100) {
-  return Math.max(min, Math.min(max, n));
+function clamp(n,min=0,max=100){
+
+  return Math.max(min,Math.min(max,n));
+
 }
 
 
-function randomShock() {
-  return (Math.random() * 2 - 1) * 2;
+function randomShock(){
+
+  return (Math.random()*2-1)*2;
+
 }
 
 
-function economicGap() {
-  return state.demand - state.supply;
+function economicGap(){
+
+  return state.demand-state.supply;
+
 }
 
 
-function isSystemType(type) {
+function isSystemType(type){
 
   return [
     "FX",
@@ -104,12 +121,12 @@ function isSystemType(type) {
 /* -----------------------------
    ENERGY INDEX
 ------------------------------*/
-export function energyIndex() {
+export function energyIndex(){
 
   return (
-    state.FX * 0.5 +
-    state.INF * 0.3 +
-    state.DC * 0.2
+    state.FX*0.5 +
+    state.INF*0.3 +
+    state.DC*0.2
   );
 
 }
@@ -118,7 +135,7 @@ export function energyIndex() {
 /* -----------------------------
    CASCADE ENGINE
 ------------------------------*/
-export function applyCascade(type) {
+export function applyCascade(type){
 
   switch(type){
 
@@ -126,7 +143,6 @@ export function applyCascade(type) {
 
       state.DC += 2;
       state.INF += 1;
-
       break;
 
 
@@ -134,7 +150,6 @@ export function applyCascade(type) {
 
       state.INF += 2;
       state.CYB += 1;
-
       break;
 
 
@@ -142,7 +157,6 @@ export function applyCascade(type) {
 
       state.FX += 2;
       state.INF += 1;
-
       break;
 
 
@@ -150,7 +164,6 @@ export function applyCascade(type) {
 
       state.FX += 2;
       state.DC += 1;
-
       break;
 
   }
@@ -167,9 +180,9 @@ export function applyCascade(type) {
 function updateOilPrice(){
 
   const stress =
-    state.FX * 0.25 +
-    state.INF * 0.35 +
-    Math.abs(economicGap()) * 0.2;
+    state.FX*0.25 +
+    state.INF*0.35 +
+    Math.abs(economicGap())*0.2;
 
 
   state.oilPrice =
@@ -188,39 +201,39 @@ function updateOilPrice(){
 function updateBiodiesel(risk){
 
   const pressure =
-    state.FX * 0.2 +
-    state.INF * 0.25 +
-    Math.abs(economicGap()) * 0.15;
+    state.FX*0.2 +
+    state.INF*0.25 +
+    Math.abs(economicGap())*0.15;
 
 
   const baseMap = {
 
-    LOW: 35,
-    MEDIUM: 42,
-    HIGH: 50,
-    CRITICAL: 58
+    LOW:35,
+    MEDIUM:42,
+    HIGH:50,
+    CRITICAL:58
 
   };
 
 
   state.biodiesel =
     clamp(
-      baseMap[risk] + pressure * 0.15,
+      baseMap[risk]+pressure*0.15,
       35,
       70
     );
 
 
-  if(risk === "HIGH")
-    state.cpoReserve -= 2;
+  if(risk==="HIGH")
+    state.cpoReserve-=2;
 
 
-  if(risk === "CRITICAL")
-    state.cpoReserve -= 5;
+  if(risk==="CRITICAL")
+    state.cpoReserve-=5;
 
 
-  if(risk === "LOW")
-    state.cpoReserve += 1;
+  if(risk==="LOW")
+    state.cpoReserve+=1;
 
 
   state.cpoReserve =
@@ -235,41 +248,52 @@ function updateBiodiesel(risk){
 export function riskLevel(){
 
 
-  // Methanol dependency stress
   const methanolRisk =
-    (100 - state.methanolSupply) * 0.3 +
-    (100 - state.methanolStorage) * 0.2;
+
+    (100-state.methanolSupply)*0.3 +
+
+    (100-state.methanolStorage)*0.2;
+
+
+
+  const priceRisk =
+    state.methanolPrice==="HIGH"
+    ? 10
+    : 0;
+
 
 
   const total =
 
-    state.FX * 1.0 +
+    state.FX*1.0 +
 
-    state.DC * 1.0 +
+    state.DC*1.0 +
 
-    state.CYB * 1.1 +
+    state.CYB*1.1 +
 
-    state.INF * 1.0 +
+    state.INF*1.0 +
 
-    energyIndex() * 0.4 +
+    energyIndex()*0.4 +
 
-    Math.abs(economicGap()) * 0.8 +
+    Math.abs(economicGap())*0.8 +
 
-    (100 - state.cpoReserve) * 0.4 +
+    (100-state.cpoReserve)*0.4 +
 
-    methanolRisk;
+    methanolRisk +
+
+    priceRisk;
 
 
 
-  if(total > 150)
+  if(total>150)
     return "CRITICAL";
 
 
-  if(total > 95)
+  if(total>95)
     return "HIGH";
 
 
-  if(total > 55)
+  if(total>55)
     return "MEDIUM";
 
 
@@ -283,10 +307,10 @@ export function riskLevel(){
 ------------------------------*/
 function stabilizeSystem(){
 
-  const risk = riskLevel();
+  const risk=riskLevel();
 
 
-  const damping = {
+  const damping={
 
     LOW:0.98,
     MEDIUM:0.95,
@@ -296,10 +320,10 @@ function stabilizeSystem(){
   }[risk];
 
 
-  state.FX *= damping;
-  state.DC *= damping;
-  state.CYB *= damping;
-  state.INF *= damping;
+  state.FX*=damping;
+  state.DC*=damping;
+  state.CYB*=damping;
+  state.INF*=damping;
 
 }
 
@@ -309,10 +333,10 @@ function stabilizeSystem(){
 ------------------------------*/
 function applyDecay(){
 
-  state.FX *= DECAY_RATE;
-  state.DC *= DECAY_RATE;
-  state.CYB *= DECAY_RATE;
-  state.INF *= DECAY_RATE;
+  state.FX*=DECAY_RATE;
+  state.DC*=DECAY_RATE;
+  state.CYB*=DECAY_RATE;
+  state.INF*=DECAY_RATE;
 
 }
 
@@ -322,27 +346,24 @@ function applyDecay(){
 ------------------------------*/
 export function solutions(level){
 
-  const map = {
+  const map={
 
     CRITICAL:[
       "Emergency isolation protocol",
       "Auto load shedding",
-      "System fragmentation mode"
+      "Secure energy supply chain"
     ],
-
 
     HIGH:[
       "Reserve activation",
       "Demand throttling",
-      "Risk containment layer"
+      "Secure methanol inventory"
     ],
-
 
     MEDIUM:[
       "Monitoring reinforcement",
-      "Soft balancing adjustments"
+      "Supplier diversification"
     ],
-
 
     LOW:[
       "Normal operations"
@@ -364,25 +385,45 @@ export function inject(type){
 
   if(isSystemType(type)){
 
-    state[type] =
-      clamp(state[type] + 10);
-
+    state[type]=clamp(state[type]+10);
 
     applyCascade(type);
 
   }
 
 
-  if(type === "OIL_HIGH")
-    state.oilPrice += 15;
+  if(type==="OIL_HIGH")
+    state.oilPrice+=15;
 
 
-  if(type === "OIL_LOW")
-    state.oilPrice -= 15;
+  if(type==="OIL_LOW")
+    state.oilPrice-=15;
 
 
 
-  const risk = riskLevel();
+  if(type==="METHANOL_SHORTAGE"){
+
+    state.methanolSupply =
+      clamp(state.methanolSupply-50);
+
+    state.methanolStorage =
+      clamp(state.methanolStorage-30);
+
+  }
+
+
+
+  if(type==="METHANOL_PRICE_SPIKE"){
+
+    state.methanolPrice="HIGH";
+
+    state.consumerCost +=10;
+
+  }
+
+
+
+  const risk=riskLevel();
 
 
   updateOilPrice();
@@ -399,20 +440,16 @@ export function inject(type){
   history.push({
 
     type,
-
     risk,
-
     oilPrice:state.oilPrice,
-
     cpo:state.cpoReserve,
-
     methanol:state.methanolSupply
 
   });
 
 
 
-  if(history.length > MAX_HISTORY)
+  if(history.length>MAX_HISTORY)
     history.shift();
 
 
@@ -420,11 +457,8 @@ export function inject(type){
   return {
 
     state:{...state},
-
     risk,
-
     cascadeCount,
-
     scenario:
       scenarios[type] ||
       {
@@ -451,7 +485,6 @@ export function getCascadeCount(){
 ------------------------------*/
 export function reset(){
 
-
   Object.assign(
     state,
     {
@@ -466,6 +499,7 @@ export function reset(){
 
       methanolSupply:100,
       methanolStorage:100,
+      methanolPrice:"NORMAL",
 
       oilPrice:70,
 
