@@ -97,10 +97,20 @@ methanolPrice:
       el.cpo.innerText =
         state.cpoReserve;
 
+if(el.methanolSupply)
+  el.methanolSupply.innerText =
+    state.methanolSupply;
 
-    if(el.imp)
-      el.imp.innerText =
-        state.methanolSupply ?? 60;
+
+if(el.methanolStorage)
+  el.methanolStorage.innerText =
+    state.methanolStorage;
+
+
+if(el.methanolPrice)
+  el.methanolPrice.innerText =
+    state.methanolPrice;
+    
 
 
     if(el.stab)
