@@ -3,240 +3,269 @@ import {
   scenarios,
   inject,
   riskLevel,
-  solutions
+  solutions,
+  getCascadeCount
 } from "./engine.js";
+
 
 window.addEventListener("DOMContentLoaded", () => {
 
+
+  // -----------------------------
+  // UI REFERENCES
+  // -----------------------------
+
   const el = {
+
     FX: document.getElementById("FX"),
     DC: document.getElementById("DC"),
     CYB: document.getElementById("CYB"),
     INF: document.getElementById("INF"),
 
-    scenarioButtons: document.getElementById("scenarioButtons"),
-    scenarioInfo: document.getElementById("scenarioInfo"),
+    scenarioButtons:
+      document.getElementById("scenarioButtons"),
 
-    riskPanel: document.getElementById("riskPanel"),
-    solutionPanel: document.getElementById("solutionPanel"),
-    actionPanel: document.getElementById("actionPanel"),
+    scenarioInfo:
+      document.getElementById("scenarioInfo"),
 
-    decisionPanel: document.getElementById("decisionPanel"),
+    riskPanel:
+      document.getElementById("riskPanel"),
 
-    blend: document.getElementById("blend"),
-    cpo: document.getElementById("cpo"),
-    imp: document.getElementById("imp"),
-    stab: document.getElementById("stab")
+    solutionPanel:
+      document.getElementById("solutionPanel"),
+
+    actionPanel:
+      document.getElementById("actionPanel"),
+
+
+    blend:
+      document.getElementById("blend"),
+
+    cpo:
+      document.getElementById("cpo"),
+
+    imp:
+      document.getElementById("imp"),
+
+    stab:
+      document.getElementById("stab")
+
   };
+
 
   let activeScenario = "FX";
 
-  /* =============================
-     RENDER SYSTEM
-  ==============================*/
-  function renderAll() {
 
-    if (el.FX) el.FX.innerText = state.FX.toFixed(0);
-    if (el.DC) el.DC.innerText = state.DC.toFixed(0);
-    if (el.CYB) el.CYB.innerText = state.CYB.toFixed(0);
-    if (el.INF) el.INF.innerText = state.INF.toFixed(0);
+  // -----------------------------
+  // CORE RENDER
+  // -----------------------------
 
-    if (el.blend) el.blend.innerText = state.biodiesel.toFixed(1);
-    if (el.cpo) el.cpo.innerText = state.cpoReserve;
-    if (el.imp) el.imp.innerText = "—";
-    if (el.stab) el.stab.innerText = "SYSTEM MODE";
+  function render(){
 
-    renderPanels();
-  }
 
-  /* =============================
-     PANELS
-  ==============================*/
-  function renderPanels() {
+    // SYSTEM VALUES
 
-    const risk = riskLevel();
+    el.FX.innerText = state.FX.toFixed(1);
+    el.DC.innerText = state.DC.toFixed(1);
+    el.CYB.innerText = state.CYB.toFixed(1);
+    el.INF.innerText = state.INF.toFixed(1);
 
-    const scenario = scenarios[activeScenario] || {
-      name: "NO SCENARIO",
-      description: "",
-      impact: ""
-    };
 
-    const list = solutions(risk);
+
+    // BIODIESEL
+
+    el.blend.innerText =
+      state.biodiesel.toFixed(1);
+
+
+    el.cpo.innerText =
+      state.cpoReserve;
+
+
+
+    // IMPORT DEPENDENCY
+
+    if(el.imp){
+
+      el.imp.innerText =
+        state.methanolSupply !== undefined
+        ? state.methanolSupply
+        : 60;
+
+    }
+
+
+
+    // STABILITY
+
+    if(el.stab){
+
+      el.stab.innerText =
+        riskLevel();
+
+    }
+
+
+
+    // RISK PANEL
+
+    const risk =
+      riskLevel();
+
 
     el.riskPanel.innerHTML = `
+
       <h3>RISK PANEL</h3>
-      Risk: <b>${risk}</b>
+
+      Risk: ${risk}
+
     `;
+
+
+
+    // SOLUTION PANEL
+
+    const list =
+      solutions(risk);
+
 
     el.solutionPanel.innerHTML = `
+
       <h3>SOLUTION PANEL</h3>
+
       ${list.map(x => `• ${x}`).join("<br>")}
+
     `;
+
+
+
+    // ACTION PANEL
 
     el.actionPanel.innerHTML = `
+
       <h3>ACTION SEQUENCE</h3>
+
       1. Detect input<br>
-      2. Cascade executed<br>
-      3. Risk evaluated<br>
-      4. Stabilisation applied
+
+      2. Cascade: ${getCascadeCount()}<br>
+
+      3. Evaluate resilience<br>
+
+      4. Apply stabilization
+
     `;
 
-    el.scenarioInfo.innerHTML = `
-      <div style="margin-top:10px;">
+
+
+    // SCENARIO INFO
+
+    const scenario =
+      scenarios[activeScenario];
+
+
+    if(scenario){
+
+      el.scenarioInfo.innerHTML = `
+
         <b>${scenario.name}</b><br>
-        <small>${scenario.impact || ""}</small>
-      </div>
-    `;
 
-    renderDecisionPanel(risk, scenario);
-  }
+        <small>
+        ${scenario.description || ""}
+        </small>
 
-  /* =============================
-     DECISION PANEL
-  ==============================*/
-  function renderDecisionPanel(risk, scenario) {
+        <br>
 
-    let verdict, reason, action;
+        <i>
+        ${scenario.impact || ""}
+        </i>
 
-    if (risk === "CRITICAL") {
-      verdict = "CRITICAL SYSTEM FAILURE";
-      reason = "Multi-layer cascade detected";
-      action = "Emergency shutdown + isolation";
-    } 
-    else if (risk === "HIGH") {
-      verdict = "HIGH STRESS STATE";
-      reason = "Cascade propagation active";
-      action = "Reduce load + activate reserves";
-    } 
-    else if (risk === "MEDIUM") {
-      verdict = "STRESSED BUT STABLE";
-      reason = "Partial imbalance detected";
-      action = "Monitor + balancing";
-    } 
-    else {
-      verdict = "STABLE OPERATION";
-      reason = "No significant instability detected";
-      action = "Normal operations continue";
+      `;
+
     }
 
-    el.decisionPanel.innerHTML = `
-      <h3>DECISION PANEL</h3>
-      <b>${verdict}</b><br><br>
-      <b>Reason:</b> ${reason}<br><br>
-      <b>Action:</b> ${action}<br><br>
-      <b>Scenario:</b> ${scenario.name}
-    `;
   }
 
-  /* =============================
-     CONTROL ROOM FX ENGINE
-  ==============================*/
-  function controlRoomFX(type, risk) {
 
-    const intensityMap = {
-      LOW: 1,
-      MEDIUM: 1.5,
-      HIGH: 2,
-      CRITICAL: 3
-    };
 
-    const intensity = intensityMap[risk] || 1;
+  // -----------------------------
+  // SCENARIO BUTTONS
+  // -----------------------------
 
-    const panels = document.querySelectorAll(".panel");
+  function initScenarios(){
 
-    panels.forEach(p => {
-      p.style.transition = "0.15s";
-    });
-
-    switch (type) {
-
-      case "FX":
-        document.body.style.boxShadow =
-          `inset 0 0 ${80 * intensity}px rgba(255,0,0,0.4)`;
-        break;
-
-      case "INF":
-        document.body.style.boxShadow =
-          `inset 0 0 ${80 * intensity}px rgba(0,150,255,0.4)`;
-        break;
-
-      case "CYB":
-        document.body.style.filter = "contrast(1.2) hue-rotate(90deg)";
-        setTimeout(() => document.body.style.filter = "", 250);
-        break;
-
-      case "DC":
-        panels.forEach(p => {
-          const x = (Math.random() * 2 - 1) * intensity;
-          const y = (Math.random() * 2 - 1) * intensity;
-          p.style.transform = `translate(${x}px, ${y}px)`;
-        });
-        break;
-    }
-
-    setTimeout(() => {
-      document.body.style.boxShadow = "none";
-      panels.forEach(p => p.style.transform = "none");
-    }, 300);
-  }
-
-  /* =============================
-     FLASH FEEDBACK
-  ==============================*/
-  function flashUI(type) {
-
-    const panel = document.getElementById("riskPanel");
-    if (panel) {
-      panel.style.transition = "0.2s";
-      panel.style.boxShadow = "0 0 20px #00ff88";
-
-      setTimeout(() => {
-        panel.style.boxShadow = "none";
-      }, 250);
-    }
-
-    const scenarioInfo = document.getElementById("scenarioInfo");
-    if (scenarioInfo) {
-      scenarioInfo.innerHTML = `<b>ACTIVE INPUT:</b> ${type}`;
-    }
-  }
-
-  /* =============================
-     TRIGGER SYSTEM
-  ==============================*/
-  window.trigger = function(type) {
-
-    activeScenario = type;
-
-    inject(type);
-
-    renderAll();
-
-    flashUI(type);
-
-    controlRoomFX(type, riskLevel());
-  };
-
-  /* =============================
-     INIT
-  ==============================*/
-  function renderScenarioButtons() {
 
     el.scenarioButtons.innerHTML = "";
 
-    Object.entries(scenarios).forEach(([key, s]) => {
 
-      const btn = document.createElement("button");
-      btn.className = "scenario-btn";
-      btn.innerHTML = s.name;
+    Object.entries(scenarios)
+    .forEach(([key,scenario])=>{
 
-      btn.onclick = () => trigger(key);
 
-      el.scenarioButtons.appendChild(btn);
+      const btn =
+        document.createElement("button");
+
+
+      btn.className =
+        "scenario-btn";
+
+
+      btn.innerHTML =
+        `<b>${scenario.name}</b>`;
+
+
+      btn.onclick = () => {
+
+        activeScenario = key;
+
+        inject(key);
+
+        render();
+
+      };
+
+
+      el.scenarioButtons
+      .appendChild(btn);
+
+
     });
+
+
   }
 
-  renderScenarioButtons();
-  renderAll();
+
+
+  // -----------------------------
+  // GLOBAL CONTROL
+  // -----------------------------
+
+  window.trigger =
+    function(type){
+
+      activeScenario = type;
+
+      inject(type);
+
+      render();
+
+    };
+
+
+
+  // -----------------------------
+  // STARTUP
+  // -----------------------------
+
+  function boot(){
+
+    initScenarios();
+
+    render();
+
+  }
+
+
+  boot();
+
+
 });
