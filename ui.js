@@ -42,10 +42,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
     cpo:
       document.getElementById("cpo"),
+methanolSupply:
+  document.getElementById("methanolSupply"),
 
-    imp:
-      document.getElementById("imp"),
+methanolStorage:
+  document.getElementById("methanolStorage"),
 
+methanolPrice:
+  document.getElementById("methanolPrice"),
+    
     stab:
       document.getElementById("stab"),
 
