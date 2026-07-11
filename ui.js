@@ -11,10 +11,6 @@ import {
 window.addEventListener("DOMContentLoaded", () => {
 
 
-  // -----------------------------
-  // UI REFERENCES
-  // -----------------------------
-
   const el = {
 
     FX: document.getElementById("FX"),
@@ -37,6 +33,9 @@ window.addEventListener("DOMContentLoaded", () => {
     actionPanel:
       document.getElementById("actionPanel"),
 
+    decisionPanel:
+      document.getElementById("decisionPanel"),
+
 
     blend:
       document.getElementById("blend"),
@@ -48,7 +47,20 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("imp"),
 
     stab:
-      document.getElementById("stab")
+      document.getElementById("stab"),
+
+
+    supply:
+      document.getElementById("supply"),
+
+    demand:
+      document.getElementById("demand"),
+
+    subsidy:
+      document.getElementById("subsidy"),
+
+    cost:
+      document.getElementById("cost")
 
   };
 
@@ -56,68 +68,79 @@ window.addEventListener("DOMContentLoaded", () => {
   let activeScenario = "FX";
 
 
-  // -----------------------------
-  // CORE RENDER
-  // -----------------------------
 
   function render(){
 
 
-    // SYSTEM VALUES
+    // SYSTEM
 
-    el.FX.innerText = state.FX.toFixed(1);
-    el.DC.innerText = state.DC.toFixed(1);
-    el.CYB.innerText = state.CYB.toFixed(1);
-    el.INF.innerText = state.INF.toFixed(1);
-
-
-
-    // BIODIESEL
-
-    el.blend.innerText =
-      state.biodiesel.toFixed(1);
-
-
-    el.cpo.innerText =
-      state.cpoReserve;
+    if(el.FX) el.FX.innerText = state.FX.toFixed(1);
+    if(el.DC) el.DC.innerText = state.DC.toFixed(1);
+    if(el.CYB) el.CYB.innerText = state.CYB.toFixed(1);
+    if(el.INF) el.INF.innerText = state.INF.toFixed(1);
 
 
 
-    // IMPORT DEPENDENCY
+    // ENERGY
 
-    if(el.imp){
+    if(el.blend)
+      el.blend.innerText =
+        state.biodiesel.toFixed(1);
 
+
+    if(el.cpo)
+      el.cpo.innerText =
+        state.cpoReserve;
+
+
+    if(el.imp)
       el.imp.innerText =
-        state.methanolSupply !== undefined
-        ? state.methanolSupply
-        : 60;
-
-    }
+        state.methanolSupply ?? 60;
 
 
-
-    // STABILITY
-
-    if(el.stab){
-
+    if(el.stab)
       el.stab.innerText =
         riskLevel();
 
-    }
+
+
+    // ECONOMIC
+
+    if(el.supply)
+      el.supply.innerText =
+        state.supply;
+
+
+    if(el.demand)
+      el.demand.innerText =
+        state.demand;
+
+
+    if(el.subsidy)
+      el.subsidy.innerText =
+        state.subsidy;
+
+
+    if(el.cost)
+      el.cost.innerText =
+        state.consumerCost;
+
+
+
+    const risk = riskLevel();
 
 
 
     // RISK PANEL
 
-    const risk =
-      riskLevel();
-
+    if(el.riskPanel)
 
     el.riskPanel.innerHTML = `
 
       <h3>RISK PANEL</h3>
 
-      Risk: ${risk}
+      Risk:
+      <b>${risk}</b>
 
     `;
 
@@ -125,15 +148,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // SOLUTION PANEL
 
-    const list =
-      solutions(risk);
+    const list = solutions(risk);
 
+
+
+    if(el.solutionPanel)
 
     el.solutionPanel.innerHTML = `
 
       <h3>SOLUTION PANEL</h3>
 
-      ${list.map(x => `• ${x}`).join("<br>")}
+      ${list.map(x=>`• ${x}`).join("<br>")}
 
     `;
 
@@ -141,13 +166,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // ACTION PANEL
 
+    if(el.actionPanel)
+
     el.actionPanel.innerHTML = `
 
       <h3>ACTION SEQUENCE</h3>
 
       1. Detect input<br>
 
-      2. Cascade: ${getCascadeCount()}<br>
+      2. Cascade count:
+      ${getCascadeCount()}<br>
 
       3. Evaluate resilience<br>
 
@@ -157,17 +185,64 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
-    // SCENARIO INFO
+    // DECISION PANEL
+
+    if(el.decisionPanel){
+
+      let action;
+
+
+      if(risk==="CRITICAL")
+        action="Emergency stabilization protocol";
+
+
+      else if(risk==="HIGH")
+        action="Activate reserves and containment";
+
+
+      else if(risk==="MEDIUM")
+        action="Monitor and rebalance system";
+
+
+      else
+        action="Normal operations continue";
+
+
+
+      el.decisionPanel.innerHTML = `
+
+        <h3>DECISION PANEL</h3>
+
+        Status:
+        <b>${risk}</b>
+
+        <br><br>
+
+        Recommended Action:
+
+        <br>
+
+        ${action}
+
+      `;
+
+    }
+
+
+
+    // SCENARIO
 
     const scenario =
       scenarios[activeScenario];
 
 
-    if(scenario){
+    if(scenario && el.scenarioInfo){
 
       el.scenarioInfo.innerHTML = `
 
-        <b>${scenario.name}</b><br>
+        <b>${scenario.name}</b>
+
+        <br>
 
         <small>
         ${scenario.description || ""}
@@ -187,14 +262,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
-  // -----------------------------
-  // SCENARIO BUTTONS
-  // -----------------------------
 
   function initScenarios(){
 
 
-    el.scenarioButtons.innerHTML = "";
+    if(!el.scenarioButtons)
+      return;
+
+
+    el.scenarioButtons.innerHTML="";
 
 
     Object.entries(scenarios)
@@ -210,12 +286,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
       btn.innerHTML =
-        `<b>${scenario.name}</b>`;
+        scenario.name;
 
 
-      btn.onclick = () => {
+      btn.onclick=()=>{
 
-        activeScenario = key;
+        activeScenario=key;
 
         inject(key);
 
@@ -230,31 +306,21 @@ window.addEventListener("DOMContentLoaded", () => {
 
     });
 
-
   }
 
 
 
-  // -----------------------------
-  // GLOBAL CONTROL
-  // -----------------------------
+  window.trigger=function(type){
 
-  window.trigger =
-    function(type){
+    activeScenario=type;
 
-      activeScenario = type;
+    inject(type);
 
-      inject(type);
+    render();
 
-      render();
-
-    };
+  };
 
 
-
-  // -----------------------------
-  // STARTUP
-  // -----------------------------
 
   function boot(){
 
