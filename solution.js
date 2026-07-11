@@ -12,82 +12,145 @@
 const solutionMap = {
 
   LOW: [
+
     "Normal operations",
+
     "Continue system monitoring",
+
     "Maintain energy reserves"
+
   ],
 
 
   MEDIUM: [
+
     "Increase monitoring frequency",
+
     "Apply soft balancing adjustments",
+
     "Review supply chain exposure"
+
   ],
 
 
   HIGH: [
+
     "Activate strategic reserves",
+
     "Reduce external dependency",
+
     "Increase operational controls"
+
   ],
 
 
   CRITICAL: [
+
     "Emergency stabilization protocol",
+
     "Activate contingency reserves",
+
     "Execute systemic recovery plan"
+
   ]
 
 };
+
 
 
 /* -----------------------------
    ENERGY SOLUTIONS
 ------------------------------*/
 
-function energySolutions(state){
+function energySolutions(state = {}) {
 
   let actions = [];
 
 
-  if(state.cpoReserve < 40){
+  // CPO RESERVE CHECK
 
-    actions.push(
-      "Protect remaining CPO reserves"
-    );
+  if(state.cpoReserve !== undefined) {
 
-  }
+    if(state.cpoReserve < 40) {
 
+      actions.push(
+        "Protect remaining CPO reserves"
+      );
 
-  if(state.methanolSupply < 50){
-
-    actions.push(
-      "Secure alternative methanol supply"
-    );
-
-    actions.push(
-      "Prioritize methanol allocation for biodiesel production"
-    );
+    }
 
   }
 
 
-  if(state.methanolStorage < 50){
 
-    actions.push(
-      "Increase methanol strategic storage buffer"
-    );
+  // METHANOL SUPPLY CHECK
+
+  if(state.methanolSupply !== undefined) {
+
+    if(state.methanolSupply < 50) {
+
+      actions.push(
+        "Secure alternative methanol supply"
+      );
+
+
+      actions.push(
+        "Prioritize methanol allocation for biodiesel production"
+      );
+
+    }
 
   }
 
 
-  if(state.methanolPrice === "HIGH"){
+
+  // METHANOL STORAGE CHECK
+
+  if(state.methanolStorage !== undefined) {
+
+    if(state.methanolStorage < 50) {
+
+      actions.push(
+        "Increase methanol strategic storage buffer"
+      );
+
+    }
+
+  }
+
+
+
+  // METHANOL PRICE PRESSURE
+
+  if(state.methanolPrice === "HIGH") {
 
     actions.push(
       "Monitor biodiesel production cost pressure"
     );
 
+
+    actions.push(
+      "Optimize fuel substitution strategy"
+    );
+
   }
+
+
+
+  // BIODIESEL RESPONSE
+
+  if(state.biodiesel !== undefined) {
+
+    if(state.biodiesel > 50) {
+
+      actions.push(
+        "High biodiesel blend support active"
+      );
+
+    }
+
+  }
+
 
 
   return actions;
@@ -95,49 +158,54 @@ function energySolutions(state){
 }
 
 
+
 /* -----------------------------
    MAIN SOLUTION ENGINE
 ------------------------------*/
 
-export function generateSolutions(level, state){
-
-  let solutions = [];
+export function generateSolutions(level, state = {}) {
 
 
-  if(solutionMap[level]){
+  let output = [];
 
-    solutions.push(
+
+  if(solutionMap[level]) {
+
+    output.push(
       ...solutionMap[level]
     );
 
   }
 
 
-  solutions.push(
+  output.push(
     ...energySolutions(state)
   );
 
 
-  return solutions;
+  return output;
 
 }
+
 
 
 /* -----------------------------
    DECISION SUMMARY
 ------------------------------*/
 
-export function decisionSummary(level, state){
+export function decisionSummary(level, state = {}) {
 
-  const solutions =
-    generateSolutions(level,state);
+
+  const actions =
+    generateSolutions(level, state);
+
 
 
   return {
 
     riskLevel: level,
 
-    actions: solutions,
+    actions,
 
     timestamp:
       new Date().toISOString()
@@ -147,14 +215,26 @@ export function decisionSummary(level, state){
 }
 
 
+
 /* -----------------------------
-   LEGACY UI COMPATIBILITY
+   UI COMPATIBILITY
+   USED BY ui.js
 ------------------------------*/
 
-export function solutions(level){
+export function solutions(level, state = {}) {
 
-  return solutionMap[level] || [
-    "Awaiting analysis"
-  ];
+
+  const output =
+    generateSolutions(level, state);
+
+
+
+  return output.length
+    ? output
+    : [
+
+      "Awaiting analysis"
+
+    ];
 
 }
